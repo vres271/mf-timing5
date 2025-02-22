@@ -1,7 +1,63 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 body {
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    font-size: 14px;
+    font-family: Roboto;
+    font-size: 16px;
     background-color: lightslategray;
     color: white;
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        th, td {
+            border: 1px solid rgba(255, 255, 255, 0.329);
+            padding: 8px;
+            text-align: left;
+            &.delete {
+                color: rgb(212, 43, 13);
+                text-align: center;
+                cursor: pointer;
+            }
+        }
+        th {
+            background-color: darkslategray;
+        }
+        tr:nth-child(even) {
+            background-color: rgba(169, 169, 169, 0.451);
+        }
+    }
+
+    .add-user {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        input {
+            padding: 8px;
+            width: 70%;
+            &:focus {
+                outline: none;
+            }
+        }
+        button {
+            padding: 8px;
+            width: 25%;
+            background-color: darkslategray;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    }
+
+    .error {
+        background: rgb(153, 47, 29);;
+        color: white;
+        padding: 10px;
+        font-size: 14px;
+        margin-bottom: 10px;
+        .header {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .details {
+            margin-bottom: 10px;
+        }
+    }
 }
