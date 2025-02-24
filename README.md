@@ -3,6 +3,11 @@
 ## Описание
 Это веб-приложение с фронтендом на Angular, бэкендом на NestJS и базой данных PostgreSQL.
 
+## Генерация секретного ключа
+```bash
+   openssl rand -base64 32 > secrets/jwt_secret.key
+```
+
 ## Запуск
 1. Установите Docker и Docker Compose.
 2. Склонируйте репозиторий.

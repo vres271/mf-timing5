@@ -19,16 +19,22 @@ export class AppComponent implements OnInit {
   backendHealth = '';
   users: any[] = [];
   error: IError|null = null;
+
+  jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZXMiOlsiYWRtaW4iXSwiaWF0IjoxNzEwNDI3MzkxLCJleHAiOjE3NDA3MzA5OTh9.jYr9JNon4Zr0zTZIBcOCl23YZSchXBVO5qt0uO7w3dY'
+  setJwt(e: any) {
+    this.jwt = e.target.value;
+  }
   
+
   ngOnInit() {
     console.log('AppComponent initialized');
-    fetch('api/health')
+    this.request('api/health')
       .then(response => response.text())
       .then(text => {
         this.backendHealth = text;
       });
 
-    fetch('api/users')
+    this.request('api/users')
       .then(response => response.json())
       .then(data => {
         this.users = data;
@@ -37,7 +43,7 @@ export class AppComponent implements OnInit {
   }
 
   deleteUser(user: any) {
-    fetch(`api/users/${user.id}`, {method: 'DELETE'})
+    this.request(`api/users/${user.id}`, 'DELETE')
     .then(() => {
       this.users = this.users.filter(u => u.id !== user.id);
     });
@@ -45,22 +51,29 @@ export class AppComponent implements OnInit {
 
   addUser(name: string, email: string, password: string) {
     this.error = null;
-    fetch('api/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({name, email, password})
-    })
-    .then(response => response.json())
-    .then(res => {
-      if (res.error) {
-        this.errorHandler(res);
-        return;
-      }
-      this.users.push(res);
-    })
+
+    this.request('api/users', 'POST', {name, email, password})
+      .then(response => response.json())
+      .then(res => {
+        if (res.error) {
+          this.errorHandler(res);
+          return;
+        }
+        this.users.push(res);
+      })
 ;
+  }
+
+  request(url: string, method?: string, data?: Object) {
+    return fetch(url, {
+      method: method || 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${this.jwt}`
+      },
+      body: data ? JSON.stringify(data) : undefined
+    })
+
   }
 
   errorHandler(error: IError) {
