@@ -20,7 +20,7 @@ RUN wget https://luarocks.org/releases/luarocks-3.9.2.tar.gz && \
 RUN luarocks install lua-resty-jwt
 
 # Копирование конфигурации Nginx
-COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+# COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 
 # Открытие порта 80
 EXPOSE 80
