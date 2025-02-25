@@ -7,6 +7,13 @@ interface IError {
   statusCode: number
 }
 
+interface IUser {
+  id: number,
+  name: string,
+  email: string,
+  role: string[],
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -14,6 +21,7 @@ interface IError {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
+
 export class AppComponent implements OnInit {
   title = 'mft5-frontend';
   backendHealth = '';
@@ -25,6 +33,7 @@ export class AppComponent implements OnInit {
     this.jwt = e.target.value;
   }
   
+  user: IUser|null = null;
 
   ngOnInit() {
     console.log('AppComponent initialized');
@@ -81,6 +90,23 @@ export class AppComponent implements OnInit {
       ...error,
       message: error.message instanceof Array ? error.message : [error.message]
     };
+  }
+
+  login(name: string, password: string) {
+    this.error = null;
+    this.request('api/auth/login', 'POST', {name, password})
+      .then(response => response.json())
+      .then(res => {
+        if (res.error) {
+          this.errorHandler(res);
+          return;
+        }
+        this.user = res;
+      });
+  }
+
+  logout() {
+    this.user = null;
   }
 
 }

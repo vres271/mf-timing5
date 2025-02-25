@@ -1,9 +1,21 @@
-<h1>Hello, {{ title }}</h1>
+<div class="flex-row align-items-center ">
+    <div><h1>Hello, {{ title }}</h1></div>
+    <div class="margin-left-auto">
+        @if (user) {
+            {{ user.name }} <button (click)="logout()">Logout</button>
+        }
+        @else {
+            <input #name placeholder="Name" type="text">
+            <input #password placeholder="Password" type="password">
+            <button (click)="login(name.value, password.value)">Login</button>
+        }
+    </div>
+</div>    
 <div><textarea [value]="jwt" (input)="setJwt($event)" placeholder="JWT-Token" class="textarea"></textarea></div>
 <p>backendHealth: {{backendHealth}}</p>
 
 <h2>Users</h2>
-<div class="add-user">
+<div class="add-user flex-row">
     <input #name placeholder="Name">
     <input #email placeholder="Email" type="email">
     <input #pas4sword placeholder="Password" type="password">

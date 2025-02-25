@@ -26,29 +26,25 @@ body {
     }
 
     .add-user {
-        display: flex;
-        justify-content: space-between;
         margin-bottom: 20px;
-        input {
-            padding: 8px;
-            width: 70%;
-            &:focus {
-                outline: none;
-            }
-        }
-        button {
-            padding: 8px;
-            width: 25%;
-            background-color: darkslategray;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
     }
 
+    input {
+        padding: 8px;
+        &:focus {
+            outline: none;
+        }
+    }
+    button {
+        padding: 8px;
+        background-color: darkslategray;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    
     .textarea {
-        padding: 10px;
-        width: 95%;
+        width: 100%;
         font-size: 14px;
     }
 
@@ -66,4 +62,23 @@ body {
             margin-bottom: 10px;
         }
     }
+
+    .flex-column {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flex-row {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .margin-left-auto {
+        margin-left: auto;
+    }
+
 }
