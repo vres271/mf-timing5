@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -13,6 +15,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create(createUserDto);
+    user.password = await bcrypt.hash(createUserDto.password, 1);
     return this.usersRepository.save(user);
   }
 
