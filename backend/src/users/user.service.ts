@@ -11,15 +11,19 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findOne(name: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { name } });
+  async findOneWithPassword(name: string): Promise<User | null> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.name = :name', { name })
+      .getOne();
   }
 
   async findOneByRefreshToken(refreshToken: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { refreshToken } });
   }
 
-  async updateRefreshToken(id: number, refreshToken: string): Promise<void> {
+  async updateRefreshToken(id: string, refreshToken: string): Promise<void> {
     await this.userRepository.update(id, { refreshToken });
   }
 }

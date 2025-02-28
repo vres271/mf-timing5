@@ -8,7 +8,7 @@ interface IError {
 }
 
 interface IUser {
-  id: number,
+  id: string,
   name: string,
   email: string,
   role: string[],
@@ -28,7 +28,9 @@ export class AppComponent implements OnInit {
   users: any[] = [];
   error: IError|null = null;
 
-  jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZXMiOlsiYWRtaW4iXSwiaWF0IjoxNzEwNDI3MzkxLCJleHAiOjE3NDA3MzA5OTh9.jYr9JNon4Zr0zTZIBcOCl23YZSchXBVO5qt0uO7w3dY'
+  // jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZXMiOlsiYWRtaW4iXSwiaWF0IjoxNzEwNDI3MzkxLCJleHAiOjE3NDA3MzA5OTh9.jYr9JNon4Zr0zTZIBcOCl23YZSchXBVO5qt0uO7w3dY'
+  jwt = '';
+  jwt_refresh = '';
   setJwt(e: any) {
     this.jwt = e.target.value;
   }
@@ -37,6 +39,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     console.log('AppComponent initialized');
+
+    this.jwt = localStorage.getItem('jwt') || '';
+    this.jwt_refresh = localStorage.getItem('refreshToken') || '';
+
     this.request('api/health')
       .then(response => response.text())
       .then(text => {
@@ -53,7 +59,13 @@ export class AppComponent implements OnInit {
 
   deleteUser(user: any) {
     this.request(`api/users/${user.id}`, 'DELETE')
-    .then(() => {
+    .then(response => response.json())
+    .then(res => {
+      console.log({res})
+      if (res.error) {
+        this.errorHandler(res);
+        return;
+      }      
       this.users = this.users.filter(u => u.id !== user.id);
     });
   }
@@ -102,11 +114,20 @@ export class AppComponent implements OnInit {
           return;
         }
         this.user = res;
+        localStorage.setItem('jwt', res.access_token);
+        localStorage.setItem('refreshToken', res.refresh_token);
+
+        this.jwt = res.access_token;
+        this.jwt_refresh = res.refresh_token;
       });
   }
 
   logout() {
     this.user = null;
+    this.jwt = '';
+    this.jwt_refresh = '';
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('refreshToken');
   }
 
 }
