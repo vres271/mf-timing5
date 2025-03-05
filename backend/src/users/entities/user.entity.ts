@@ -1,16 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { IUser } from '../interfaces/user.interface';
 
 export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
   GUEST = 'guest',
-}
-
-export interface IUser {
-  id: string;
-  name: string;
-  roles: UserRole[];
-  email: string;
 }
 
 @Entity()
