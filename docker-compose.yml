@@ -28,6 +28,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
     ports:
       - "3000:3000"
     depends_on:
@@ -40,6 +41,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    secrets:
+      - jwt_secret_key
 
   frontend:
     build:
@@ -73,3 +76,7 @@ volumes:
 networks:
   app-network:
     driver: bridge
+
+secrets:
+  jwt_secret_key:
+    file: ./secrets/jwt_secret.key

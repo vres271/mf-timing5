@@ -5,13 +5,14 @@ import { AuthController } from './auth.controller';
 import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
+import { readFileSync } from 'fs';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
-      secret: 'F2MCig1qC/TrcMduOieLvc848T11yxUqCmaCA7bRKC0=',  // Замените на ваш секретный ключ
-      signOptions: { expiresIn: '1h' },  // Время жизни access-токена
+      secret: readFileSync(process.env.JWT_SECRET_KEY_FILE || '../secrets/jwt_secret.key', 'utf8').trim(),
+      signOptions: { expiresIn: '1h' },
     }),
   ],
   providers: [AuthService, UserService],
