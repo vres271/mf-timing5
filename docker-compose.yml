@@ -60,11 +60,14 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "8080:443"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
     secrets:
       - jwt_secret_key
+      - ssl_certificate
+      - ssl_private_key      
     depends_on:
       - frontend
       - backend
@@ -77,6 +80,10 @@ volumes:
 secrets:
   jwt_secret_key:
     file: ./secrets/jwt_secret.key
+  ssl_certificate:
+    file: ./secrets/ssl_certificate.crt
+  ssl_private_key:
+    file: ./secrets/ssl_private.key
 
 networks:
   app-network:
