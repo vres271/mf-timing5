@@ -28,23 +28,28 @@ export class AuthService {
       sub: user.id,
       roles: user.roles
     };
-    return {
+    const tokens = {
       access_token: this.jwtService.sign(payload),
       refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
     };
+    await this.userService.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
   }
 
-  async refreshToken(refreshToken: string) {
+  async refreshToken(refreshToken: string):Promise<{access_token: string, refresh_token: string}|null> {
     const user = await this.userService.findOneByRefreshToken(refreshToken);
     if (user) {
       const payload: ITokenPayload = {
         username: user.name,
         sub: user.id,
-        roles: [UserRole.ADMIN]
+        roles: user.roles
       };
-      return {
+      const tokens = {
         access_token: this.jwtService.sign(payload),
+        refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
       };
+      await this.userService.updateRefreshToken(user.id, tokens.refresh_token);
+      return tokens;
     }
     return null;
   }
