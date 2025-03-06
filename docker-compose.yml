@@ -31,6 +31,8 @@ services:
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
     ports:
       - "3000:3000"
+    secrets:
+      - jwt_secret_key
     depends_on:
       db:
         condition: service_healthy
@@ -41,8 +43,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    secrets:
-      - jwt_secret_key
 
   frontend:
     build:
@@ -63,7 +63,8 @@ services:
       - "8080:80"
     volumes:
       - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./secrets:/etc/nginx/secrets
+    secrets:
+      - jwt_secret_key
     depends_on:
       - frontend
       - backend
@@ -73,10 +74,10 @@ services:
 volumes:
   postgres_data:
 
-networks:
-  app-network:
-    driver: bridge
-
 secrets:
   jwt_secret_key:
     file: ./secrets/jwt_secret.key
+
+networks:
+  app-network:
+    driver: bridge
