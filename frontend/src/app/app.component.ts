@@ -130,4 +130,20 @@ export class AppComponent implements OnInit {
     localStorage.removeItem('refreshToken');
   }
 
+  refreshToken() {
+    this.error = null;
+    this.request('api/auth/refresh', 'POST', {refreshToken: this.jwt_refresh})
+      .then(response => response.json())
+      .then(res => {
+        if (res.error) {
+          this.errorHandler(res);
+          return;
+        }
+        this.jwt = res.access_token;
+        this.jwt_refresh = res.refresh_token;
+        localStorage.setItem('jwt', res.access_token);
+        localStorage.setItem('refreshToken', res.refresh_token);
+      });
+  }
+
 }

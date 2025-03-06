@@ -1,3 +1,4 @@
+<p>backendHealth: {{backendHealth}}</p>
 <div class="flex-row align-items-center ">
     <div><h1>Hello, {{ title }}</h1></div>
     <div class="margin-left-auto">
@@ -13,7 +14,9 @@
 </div>    
 <div><textarea [value]="jwt" (input)="setJwt($event)" placeholder="JWT-Auth-Token" class="textarea"></textarea></div>
 <div><textarea [value]="jwt_refresh"  placeholder="JWT-Refresh-Token" class="textarea"></textarea></div>
-<p>backendHealth: {{backendHealth}}</p>
+@if (jwt_refresh) {
+    <div><button (click)="refreshToken()">Refresh Token</button></div>
+}
 
 <h2>Users</h2>
 <div class="add-user flex-row">
