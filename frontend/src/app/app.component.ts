@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { TokensStorageService } from './core/services/tokens-storage.service';
+import { AuthService } from './core/services/auth.service';
 
 interface IError {
   message: string[],
@@ -19,7 +20,7 @@ interface IUser {
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink],
-  providers: [TokensStorageService],
+  providers: [TokensStorageService ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -39,7 +40,8 @@ export class AppComponent implements OnInit {
   user: IUser|null = null;
 
   constructor(
-    private tokensStorageService: TokensStorageService
+    private tokensStorageService: TokensStorageService,
+    public authService: AuthService,
   ) {}
 
   ngOnInit() {
@@ -83,6 +85,7 @@ export class AppComponent implements OnInit {
       .then(res => {
         if (res.error) {
           this.errorHandler(res);
+          this.authService.loadUserData();
           return;
         }
         this.user = res;
@@ -92,6 +95,7 @@ export class AppComponent implements OnInit {
         });
         this.jwt = res.access_token;
         this.jwt_refresh = res.refresh_token;
+        this.authService.loadUserData();
       });
   }
 
@@ -100,6 +104,7 @@ export class AppComponent implements OnInit {
     this.jwt = '';
     this.jwt_refresh = '';
     this.tokensStorageService.removeTokens();
+    this.authService.loadUserData();
   }
 
   refreshToken() {
@@ -109,6 +114,7 @@ export class AppComponent implements OnInit {
       .then(res => {
         if (res.error) {
           this.errorHandler(res);
+          this.authService.loadUserData();
           return;
         }
         this.jwt = res.access_token;
@@ -117,6 +123,7 @@ export class AppComponent implements OnInit {
           accessToken: res.access_token, 
           refreshToken: res.refresh_token
         });
+        this.authService.loadUserData();
       });
   }
 

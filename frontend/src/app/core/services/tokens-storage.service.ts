@@ -6,7 +6,10 @@ enum TokenKey {
   RefreshToken = 'refreshToken',
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
+
 export class TokensStorageService {
 
   private readonly storage = window.localStorage;

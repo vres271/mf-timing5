@@ -81,4 +81,8 @@ body {
         margin-left: auto;
     }
 
+    .gap-1 {
+        gap: 1rem;
+    }
+
 }

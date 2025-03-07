@@ -2,8 +2,12 @@
 <div class="flex-row align-items-center ">
     <div><h1>Hello, {{ title }}</h1></div>
     <div class="margin-left-auto">
-        @if (user) {
-            {{ user.name }} <button (click)="logout()">Logout</button>
+        @if (authService.isAuthenticated()) {
+            <div class="flex-row align-items-center gap-1">
+                <div>{{ authService.getUser().name }}</div>
+                <div>[{{ authService.getUser().roles }}]</div>
+                <div><button (click)="logout()">Logout</button></div>
+            </div>
         }
         @else {
             <input #name placeholder="Name" type="text">
