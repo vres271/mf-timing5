@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { TokensStorageService } from './core/services/tokens-storage.service';
 
 interface IError {
@@ -18,7 +18,7 @@ interface IUser {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink],
   providers: [TokensStorageService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -53,42 +53,9 @@ export class AppComponent implements OnInit {
       .then(text => {
         this.backendHealth = text;
       });
-
-    this.request('api/users')
-      .then(response => response.json())
-      .then(data => {
-        this.users = data;
-      });
     
   }
 
-  deleteUser(user: any) {
-    this.request(`api/users/${user.id}`, 'DELETE')
-    .then(response => response.json())
-    .then(res => {
-      console.log({res})
-      if (res.error) {
-        this.errorHandler(res);
-        return;
-      }      
-      this.users = this.users.filter(u => u.id !== user.id);
-    });
-  }
-
-  addUser(name: string, email: string, password: string) {
-    this.error = null;
-
-    this.request('api/users', 'POST', {name, email, password})
-      .then(response => response.json())
-      .then(res => {
-        if (res.error) {
-          this.errorHandler(res);
-          return;
-        }
-        this.users.push(res);
-      })
-;
-  }
 
   request(url: string, method?: string, data?: Object) {
     return fetch(url, {

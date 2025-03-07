@@ -18,28 +18,12 @@
     <div><button (click)="refreshToken()">Refresh Token</button></div>
 }
 
-<h2>Users</h2>
-<div class="add-user flex-row">
-    <input #name placeholder="Name">
-    <input #email placeholder="Email" type="email">
-    <input #pas4sword placeholder="Password" type="password">
-    <button (click)="addUser(name.value, email.value, pas4sword.value)">Add User</button>
-</div>
-@if (error) {
-    <div class="error">
-        <div class="header">{{ error.statusCode }} {{ error.error }}</div>
-        @for (message of error.message; track $index) {
-            <div class="detail">{{message}}</div>
-        }
-    </div>
-}
-<table>
-    @for (user of users; track $index) {
-        <tr>
-            <td>{{ $index + 1 }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td (click)="deleteUser(user)" class="delete">X</td>
-        </tr>
-    }
-</table>
+<br>
+<nav class="router-links">
+    <a routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">login</a>
+    <a routerLink="/admin" routerLinkActive="active" ariaCurrentWhenActive="page">admin</a>
+    <a routerLink="/access-denied" routerLinkActive="active" ariaCurrentWhenActive="page">access-denied</a>
+</nav>
+<br>
+<router-outlet></router-outlet>
+
