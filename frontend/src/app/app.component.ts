@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TokensStorageService } from './core/services/tokens-storage.service';
 
 interface IError {
   message: string[],
@@ -18,6 +19,7 @@ interface IUser {
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
+  providers: [TokensStorageService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -28,7 +30,6 @@ export class AppComponent implements OnInit {
   users: any[] = [];
   error: IError|null = null;
 
-  // jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZXMiOlsiYWRtaW4iXSwiaWF0IjoxNzEwNDI3MzkxLCJleHAiOjE3NDA3MzA5OTh9.jYr9JNon4Zr0zTZIBcOCl23YZSchXBVO5qt0uO7w3dY'
   jwt = '';
   jwt_refresh = '';
   setJwt(e: any) {
@@ -37,11 +38,15 @@ export class AppComponent implements OnInit {
   
   user: IUser|null = null;
 
+  constructor(
+    private tokensStorageService: TokensStorageService
+  ) {}
+
   ngOnInit() {
     console.log('AppComponent initialized');
 
-    this.jwt = localStorage.getItem('jwt') || '';
-    this.jwt_refresh = localStorage.getItem('refreshToken') || '';
+    this.jwt = this.tokensStorageService.getAccessToken() || '';
+    this.jwt_refresh = this.tokensStorageService.getRefreshToken() || '';
 
     this.request('api/health')
       .then(response => response.text())
@@ -114,9 +119,10 @@ export class AppComponent implements OnInit {
           return;
         }
         this.user = res;
-        localStorage.setItem('jwt', res.access_token);
-        localStorage.setItem('refreshToken', res.refresh_token);
-
+        this.tokensStorageService.setTokens({
+          accessToken: res.access_token, 
+          refreshToken: res.refresh_token
+        });
         this.jwt = res.access_token;
         this.jwt_refresh = res.refresh_token;
       });
@@ -126,8 +132,7 @@ export class AppComponent implements OnInit {
     this.user = null;
     this.jwt = '';
     this.jwt_refresh = '';
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('refreshToken');
+    this.tokensStorageService.removeTokens();
   }
 
   refreshToken() {
@@ -141,8 +146,10 @@ export class AppComponent implements OnInit {
         }
         this.jwt = res.access_token;
         this.jwt_refresh = res.refresh_token;
-        localStorage.setItem('jwt', res.access_token);
-        localStorage.setItem('refreshToken', res.refresh_token);
+        this.tokensStorageService.setTokens({
+          accessToken: res.access_token, 
+          refreshToken: res.refresh_token
+        });
       });
   }
 
