@@ -3,6 +3,11 @@ export interface ITokens {
   refreshToken: string | null;
 }
 
+export interface ITokensDTO {
+  access_token: string ;
+  refresh_token: string;
+}
+
 export interface ITokenPayload {
   sub: string;
   roles: string[];

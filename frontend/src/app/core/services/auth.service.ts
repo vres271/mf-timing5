@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { JwtService } from './jwt.service';
 import { TokensStorageService } from './tokens-storage.service';
+import { HttpClient } from '@angular/common/http';
+import { ITokensDTO } from '../models/tokens.interface';
 
 interface IUser {
   id: string,
@@ -23,10 +25,11 @@ export class AuthService {
   };
 
   constructor(
+    private http: HttpClient,
     private jwtService: JwtService,
     private tokensStorageService: TokensStorageService
   ) {
-    this.loadUserData(); // Загрузить данные пользователя при инициализации сервиса
+    this.getUserDataFromToken(); // Загрузить данные пользователя при инициализации сервиса
   }
 
   // Проверка авторизации
@@ -49,7 +52,7 @@ export class AuthService {
   }
 
   // Загрузить данные пользователя из токена (если токен есть)
-  loadUserData(): void {
+  getUserDataFromToken(): void {
     const token = this.tokensStorageService.getAccessToken();
     if (token) {
       const tokenPayload = this.jwtService.decodeToken(token);
@@ -65,5 +68,45 @@ export class AuthService {
     this.user.isAuthenticated = false;
     this.user.roles = [];
   }
+
+  login(credentials: { name: string; password: string }): void {
+    this.http.post<ITokensDTO>('/api/auth/login', credentials).subscribe({
+      next: (response) => {
+        this.tokensStorageService.setTokens({
+          accessToken: response.access_token, 
+          refreshToken: response.refresh_token
+        });
+        this.getUserDataFromToken();
+      },
+      error: (error) => {
+        console.error('Login failed:', error);
+      },
+    });
+  }
+
+  refreshToken(): void {
+    const refreshToken = this.tokensStorageService.getRefreshToken();
+    if (!refreshToken) {
+      return;
+    }
+    this.http.post<ITokensDTO>('/api/auth/refresh', { refreshToken }).subscribe({
+      next: (response) => {
+        this.tokensStorageService.setTokens({
+          accessToken: response.access_token, 
+          refreshToken: response.refresh_token
+        });
+        this.getUserDataFromToken();
+      },
+      error: (error) => {
+        console.error('Refresh token failed:', error);
+      },
+    });
+  }
+
+  logout(): void {
+    this.tokensStorageService.removeTokens();
+    this.getUserDataFromToken();
+  }
+
 
 }

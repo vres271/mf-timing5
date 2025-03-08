@@ -79,52 +79,55 @@ export class AppComponent implements OnInit {
   }
 
   login(name: string, password: string) {
-    this.error = null;
-    this.request('api/auth/login', 'POST', {name, password})
-      .then(response => response.json())
-      .then(res => {
-        if (res.error) {
-          this.errorHandler(res);
-          this.authService.loadUserData();
-          return;
-        }
-        this.user = res;
-        this.tokensStorageService.setTokens({
-          accessToken: res.access_token, 
-          refreshToken: res.refresh_token
-        });
-        this.jwt = res.access_token;
-        this.jwt_refresh = res.refresh_token;
-        this.authService.loadUserData();
-      });
+    this.authService.login({name, password});
+    // this.error = null;
+    // this.request('api/auth/login', 'POST', {name, password})
+    //   .then(response => response.json())
+    //   .then(res => {
+    //     if (res.error) {
+    //       this.errorHandler(res);
+    //       this.authService.getUserDataFromToken();
+    //       return;
+    //     }
+    //     this.user = res;
+    //     this.tokensStorageService.setTokens({
+    //       accessToken: res.access_token, 
+    //       refreshToken: res.refresh_token
+    //     });
+    //     this.jwt = res.access_token;
+    //     this.jwt_refresh = res.refresh_token;
+    //     this.authService.getUserDataFromToken();
+    //   });
   }
 
   logout() {
-    this.user = null;
-    this.jwt = '';
-    this.jwt_refresh = '';
-    this.tokensStorageService.removeTokens();
-    this.authService.loadUserData();
+    this.authService.logout();
+    // this.user = null;
+    // this.jwt = '';
+    // this.jwt_refresh = '';
+    // this.tokensStorageService.removeTokens();
+    // this.authService.getUserDataFromToken();
   }
 
   refreshToken() {
-    this.error = null;
-    this.request('api/auth/refresh', 'POST', {refreshToken: this.jwt_refresh})
-      .then(response => response.json())
-      .then(res => {
-        if (res.error) {
-          this.errorHandler(res);
-          this.authService.loadUserData();
-          return;
-        }
-        this.jwt = res.access_token;
-        this.jwt_refresh = res.refresh_token;
-        this.tokensStorageService.setTokens({
-          accessToken: res.access_token, 
-          refreshToken: res.refresh_token
-        });
-        this.authService.loadUserData();
-      });
+    this.authService.refreshToken();
+    // this.error = null;
+    // this.request('api/auth/refresh', 'POST', {refreshToken: this.jwt_refresh})
+    //   .then(response => response.json())
+    //   .then(res => {
+    //     if (res.error) {
+    //       this.errorHandler(res);
+    //       this.authService.getUserDataFromToken();
+    //       return;
+    //     }
+    //     this.jwt = res.access_token;
+    //     this.jwt_refresh = res.refresh_token;
+    //     this.tokensStorageService.setTokens({
+    //       accessToken: res.access_token, 
+    //       refreshToken: res.refresh_token
+    //     });
+    //     this.authService.getUserDataFromToken();
+    //   });
   }
 
 }
