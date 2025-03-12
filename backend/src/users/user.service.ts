@@ -23,6 +23,10 @@ export class UserService {
     return this.userRepository.findOne({ where: { refreshToken } });
   }
 
+  async findOneById(id: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ id });
+  }
+
   async updateRefreshToken(id: string, refreshToken: string): Promise<void> {
     await this.userRepository.update(id, { refreshToken });
   }

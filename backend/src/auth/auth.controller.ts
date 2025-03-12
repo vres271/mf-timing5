@@ -1,14 +1,23 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Res, Req } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Res, Req, Get, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { IUserTokenResponseDto, UserTokenKeys } from './dto/refresh-user.dto';
 import { Request, Response } from 'express';
+import { UserService } from 'src/users/user.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
+    private userService: UserService,
   ) {}
+
+  @Get('me')
+  getProfile(
+    @Headers('X-User') user: string,
+  ) {
+    return this.userService.findOneById(user);
+  }
 
   @Post('login')
   async login(@Body() body: LoginUserDto, @Res() res: Response<IUserTokenResponseDto>) {
