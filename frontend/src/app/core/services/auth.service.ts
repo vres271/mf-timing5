@@ -10,6 +10,12 @@ interface IUser {
   name: string, 
 }
 
+interface IUserDTO {
+  id: string,
+  roles: string[], 
+  name: string, 
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -64,6 +70,21 @@ export class AuthService {
     this.user.id = '';
     this.user.isAuthenticated = false;
     this.user.roles = [];
+  }
+
+  checkAuth() {
+    return this.http.get<IUserDTO>('/api/auth/me').subscribe({
+      next: (user) => {
+        this.user = {
+          ...user,
+          isAuthenticated: true
+        }
+        console.log(this.user);
+      },
+      error: (err) => {
+        this.user.isAuthenticated = false;
+      },
+    });
   }
 
   login(credentials: { name: string; password: string }): void {

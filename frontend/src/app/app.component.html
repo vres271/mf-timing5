@@ -6,6 +6,7 @@
             <div class="flex-row align-items-center gap-1">
                 <div>{{ authService.getUser().name }}</div>
                 <div>[{{ authService.getUser().roles }}]</div>
+                <button (click)="refreshToken()">Refresh Token</button>
                 <div><button (click)="logout()">Logout</button></div>
             </div>
         }
@@ -16,11 +17,12 @@
         }
     </div>
 </div>    
-<div><textarea [value]="jwt" (input)="setJwt($event)" placeholder="JWT-Auth-Token" class="textarea"></textarea></div>
+<!-- <div><textarea [value]="jwt" (input)="setJwt($event)" placeholder="JWT-Auth-Token" class="textarea"></textarea></div>
 <div><textarea [value]="jwt_refresh"  placeholder="JWT-Refresh-Token" class="textarea"></textarea></div>
 @if (jwt_refresh) {
     <div><button (click)="refreshToken()">Refresh Token</button></div>
 }
+    <div><button (click)="refreshToken()">Refresh Token</button></div> -->
 
 <br>
 <nav class="router-links">
