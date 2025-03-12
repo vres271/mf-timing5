@@ -84,7 +84,7 @@ export class AdminComponent {
       method: method || 'GET',
       headers: {
         'Content-Type': 'application/json',
-        "Authorization": `Bearer ${this.jwt}`
+        // "Authorization": `Bearer ${this.jwt}`
       },
       body: data ? JSON.stringify(data) : undefined
     })

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { JwtService } from './jwt.service';
+import { TokensStorageService } from './tokens-storage.service';
 import { HttpClient } from '@angular/common/http';
 import { ITokensDTO } from '../models/tokens.interface';
 
@@ -24,7 +25,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private tokensStorageService: TokensStorageService
   ) {
     this.getUserDataFromToken(); // Загрузить данные пользователя при инициализации сервиса
   }
@@ -49,8 +51,8 @@ export class AuthService {
   }
 
   // Загрузить данные пользователя из токена (если токен есть)
-  getUserDataFromToken(token?: string): void {
-    // const token = this.tokensStorageService.getAccessToken();
+  getUserDataFromToken(): void {
+    const token = this.tokensStorageService.getAccessToken();
     if (token) {
       const tokenPayload = this.jwtService.decodeToken(token);
       if (tokenPayload) {
@@ -69,7 +71,11 @@ export class AuthService {
   login(credentials: { name: string; password: string }): void {
     this.http.post<ITokensDTO>('/api/auth/login', credentials).subscribe({
       next: (response) => {
-        this.getUserDataFromToken(response.access_token);
+        this.tokensStorageService.setTokens({
+          accessToken: response.access_token, 
+          refreshToken: response.refresh_token
+        });
+        this.getUserDataFromToken();
       },
       error: (error) => {
         console.error('Login failed:', error);
@@ -78,9 +84,17 @@ export class AuthService {
   }
 
   refreshToken(): void {
-    this.http.post<ITokensDTO>('/api/auth/refresh', {}).subscribe({
+    const refreshToken = this.tokensStorageService.getRefreshToken();
+    if (!refreshToken) {
+      return;
+    }
+    this.http.post<ITokensDTO>('/api/auth/refresh', { refreshToken }).subscribe({
       next: (response) => {
-        this.getUserDataFromToken(response.access_token);
+        this.tokensStorageService.setTokens({
+          accessToken: response.access_token, 
+          refreshToken: response.refresh_token
+        });
+        this.getUserDataFromToken();
       },
       error: (error) => {
         console.error('Refresh token failed:', error);
@@ -89,7 +103,9 @@ export class AuthService {
   }
 
   logout(): void {
+    this.tokensStorageService.removeTokens();
     this.getUserDataFromToken();
   }
+
 
 }

@@ -3,6 +3,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { TokensStorageService } from './core/services/tokens-storage.service';
 import { AuthService } from './core/services/auth.service';
 
+
 interface IError {
   message: string[],
   error: string,
@@ -64,7 +65,7 @@ export class AppComponent implements OnInit {
       method: method || 'GET',
       headers: {
         'Content-Type': 'application/json',
-        "Authorization": `Bearer ${this.jwt}`
+        // "Authorization": `Bearer ${this.jwt}`
       },
       body: data ? JSON.stringify(data) : undefined
     })
