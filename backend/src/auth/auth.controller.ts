@@ -37,14 +37,14 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() body: LoginUserDto, @Res() res: Response<IUserTokenResponseDto>) {
+  async login(@Body() body: LoginUserDto, @Res() res: Response<IMeDto>) {
     const user = await this.authService.validateUser(body.name, body.password);
     if (!user) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
     const tokens = await this.authService.login(user);
     this.setClientTokens(res, tokens);
-    return res.send();
+    return res.send(user);
   }
 
   @Post('refresh')

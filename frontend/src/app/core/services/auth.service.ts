@@ -30,9 +30,7 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private jwtService: JwtService
   ) {
-    this.getUserDataFromToken(); // Загрузить данные пользователя при инициализации сервиса
   }
 
   // Проверка авторизации
@@ -54,63 +52,65 @@ export class AuthService {
     return this.user;
   }
 
-  // Загрузить данные пользователя из токена (если токен есть)
-  getUserDataFromToken(token?: string): void {
-    // const token = this.tokensStorageService.getAccessToken();
-    if (token) {
-      const tokenPayload = this.jwtService.decodeToken(token);
-      if (tokenPayload) {
-        this.user.isAuthenticated = true;
-        this.user.id = tokenPayload.sub;
-        this.user.roles = tokenPayload.roles;
-        this.user.name = tokenPayload.username;
-        return;
+  getUserFromResponse(response?: IUserDTO) {
+    if (response?.id) {
+      this.user = {
+        ...response,
+        isAuthenticated: true
       }
+    } else {
+      this.user.id = '';
+      this.user.isAuthenticated = false;
+      this.user.roles = [];
     }
-    this.user.id = '';
-    this.user.isAuthenticated = false;
-    this.user.roles = [];
   }
 
   checkAuth() {
     return this.http.get<IUserDTO>('/api/auth/me').subscribe({
       next: (user) => {
-        this.user = {
-          ...user,
-          isAuthenticated: true
-        }
-        console.log(this.user);
+        this.getUserFromResponse(user);
       },
       error: (err) => {
+        this.user.id = '';
         this.user.isAuthenticated = false;
+        this.user.roles = [];
       },
     });
   }
 
   login(credentials: { name: string; password: string }): void {
-    this.http.post<ITokensDTO>('/api/auth/login', credentials).subscribe({
-      next: (response) => {
-        this.getUserDataFromToken(response.access_token);
+    this.http.post<IUserDTO>('/api/auth/login', credentials).subscribe({
+      next: (user) => {
+        this.getUserFromResponse(user);
       },
       error: (error) => {
+        this.getUserFromResponse();
         console.error('Login failed:', error);
       },
     });
   }
 
   refreshToken(): void {
-    this.http.post<ITokensDTO>('/api/auth/refresh', {}).subscribe({
-      next: (response) => {
-        this.getUserDataFromToken(response.access_token);
+    this.http.post('/api/auth/refresh', {}).subscribe({
+      next: () => {
       },
       error: (error) => {
+        this.user.isAuthenticated = false;
         console.error('Refresh token failed:', error);
       },
     });
   }
 
-  logout(): void {
-    this.getUserDataFromToken();
+  logout() {
+    return this.http.post('/api/auth/logout', {}).subscribe({
+      next: () => {
+        this.getUserFromResponse();
+        console.log('Logged out successfully');
+      },
+      error: (err) => {
+        console.error('Failed to logout', err);
+      },
+    });
   }
 
 }
