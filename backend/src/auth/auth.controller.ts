@@ -32,7 +32,8 @@ export class AuthController {
     if (!user) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
-    res.header('X-Token-Expires-In', decodedToken.exp);
+    const expiresIn = +decodedToken.exp - Math.floor(Date.now() / 1000);
+    res.header('X-Token-Expires-In', expiresIn.toString());
     return res.send(user);
   }
 
@@ -80,7 +81,7 @@ export class AuthController {
   }
 
   private setClientTokens(res: Response, tokens: IUserTokenResponseDto) {
-    res.header('X-Token-Expires-In', this.authService.authTokenExpiresIn);
+    res.header('X-Token-Expires-In', this.authService.authTokenExpiresIn.toString());
     res.cookie(UserTokenKeys.ACCESS_TOKEN, tokens.access_token, { httpOnly: true });
     res.cookie(UserTokenKeys.REFRESH_TOKEN, tokens.refresh_token, { httpOnly: true, path: '/api/auth' });
   }

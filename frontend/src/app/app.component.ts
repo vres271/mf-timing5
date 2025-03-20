@@ -111,7 +111,7 @@ export class AppComponent implements OnInit {
   }
 
   refreshToken() {
-    this.authService.refreshToken();
+    this.authService.refreshToken().subscribe();
     // this.error = null;
     // this.request('api/auth/refresh', 'POST', {refreshToken: this.jwt_refresh})
     //   .then(response => response.json())

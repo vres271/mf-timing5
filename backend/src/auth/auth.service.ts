@@ -8,8 +8,8 @@ import { IUser } from 'src/users/interfaces/user.interface';
 @Injectable()
 export class AuthService {
 
-  readonly authTokenExpiresIn = '60s';
-  readonly refreshTokenExpiresIn = '300s';
+  readonly authTokenExpiresIn = 30; // seconds
+  readonly refreshTokenExpiresIn = 60; // seconds
 
   constructor(
     private userService: UserService,

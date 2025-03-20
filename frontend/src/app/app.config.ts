@@ -1,8 +1,9 @@
-import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withDebugTracing } from '@angular/router';
+import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { appRoutes } from './app.routes';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { AuthService } from './core/services/auth.service';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 function initializeApp(authService: AuthService) {
   return () => authService.checkAuth();
@@ -13,8 +14,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     provideHttpClient(
       withFetch(),
+      withInterceptors([authInterceptor]),
     ),
-    AuthService, // Подключаем сервис AuthService
+    AuthService,
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,

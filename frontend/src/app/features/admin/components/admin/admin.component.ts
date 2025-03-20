@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TokensStorageService } from '../../../../core/services/tokens-storage.service';
+import { HttpClient } from '@angular/common/http';
 interface IError {
   message: string[],
   error: string,
@@ -36,7 +37,8 @@ export class AdminComponent {
   user: IUser|null = null;
 
   constructor(
-    private tokensStorageService: TokensStorageService
+    private tokensStorageService: TokensStorageService,
+    private http: HttpClient,
   ) {}
 
   ngOnInit() {
@@ -44,17 +46,15 @@ export class AdminComponent {
     this.jwt_refresh = this.tokensStorageService.getRefreshToken() || '';
 
     this.request('api/users')
-      .then(response => response.json())
-      .then(data => {
-        this.users = data;
+      .then((res: any) => {
+      this.users = res;
       });
     
   }
 
   deleteUser(user: any) {
     this.request(`api/users/${user.id}`, 'DELETE')
-    .then(response => response.json())
-    .then(res => {
+    .then((res: any) => {
       console.log({res})
       if (res.error) {
         this.errorHandler(res);
@@ -68,8 +68,7 @@ export class AdminComponent {
     this.error = null;
 
     this.request('api/users', 'POST', {name, email, password})
-      .then(response => response.json())
-      .then(res => {
+      .then((res: any) => {
         if (res.error) {
           this.errorHandler(res);
           return;
@@ -80,14 +79,11 @@ export class AdminComponent {
   }
 
   request(url: string, method?: string, data?: Object) {
-    return fetch(url, {
-      method: method || 'GET',
+    return this.http.request(method || 'GET', url, {
+      body: data,
       headers: {
         'Content-Type': 'application/json',
-        // "Authorization": `Bearer ${this.jwt}`
-      },
-      body: data ? JSON.stringify(data) : undefined
-    })
+      }}).toPromise();
 
   }
 

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { JwtService } from './jwt.service';
-import { HttpClient } from '@angular/common/http';
-import { ITokensDTO } from '../models/tokens.interface';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { tap } from 'rxjs';
 
 interface IUser {
   id: string,
@@ -28,6 +27,9 @@ export class AuthService {
     name: '', 
   };
 
+  private tokenExpiresIn: number | null = null;
+  private tokenRefreshTimer: any = null;
+
   constructor(
     private http: HttpClient,
   ) {
@@ -52,7 +54,7 @@ export class AuthService {
     return this.user;
   }
 
-  getUserFromResponse(response?: IUserDTO) {
+  private getUserFromResponse(response: IUserDTO | null) {
     if (response?.id) {
       this.user = {
         ...response,
@@ -65,52 +67,93 @@ export class AuthService {
     }
   }
 
+  private getTokenParamsFromResponse(response: HttpResponse<IUserDTO>) {
+    const expiresIn = +(response.headers.get('X-Token-Expires-In') || 0);
+    if (expiresIn) {
+      this.setTokenExpiresIn(expiresIn);
+    }
+  }
+
+  setUnauthenticated() {
+    this.getUserFromResponse(null);
+    this.clearTokenExpiresIn();
+  }
+
   checkAuth() {
-    return this.http.get<IUserDTO>('/api/auth/me').subscribe({
-      next: (user) => {
-        this.getUserFromResponse(user);
+    return this.http.get<IUserDTO>('/api/auth/me', {observe: 'response'}).subscribe({
+      next: (res: HttpResponse<IUserDTO>) => {
+        this.getUserFromResponse(res.body);
+        this.getTokenParamsFromResponse(res);
       },
       error: (err) => {
-        this.user.id = '';
-        this.user.isAuthenticated = false;
-        this.user.roles = [];
+        this.setUnauthenticated()
       },
     });
   }
 
   login(credentials: { name: string; password: string }): void {
-    this.http.post<IUserDTO>('/api/auth/login', credentials).subscribe({
-      next: (user) => {
-        this.getUserFromResponse(user);
+    this.http.post<IUserDTO>('/api/auth/login', credentials, {observe: 'response'}).subscribe({
+      next: (res: HttpResponse<IUserDTO>) => {
+        this.getUserFromResponse(res.body);
+        this.getTokenParamsFromResponse(res);
       },
       error: (error) => {
-        this.getUserFromResponse();
-        console.error('Login failed:', error);
+        this.setUnauthenticated();
       },
     });
   }
 
-  refreshToken(): void {
-    this.http.post('/api/auth/refresh', {}).subscribe({
-      next: () => {
-      },
-      error: (error) => {
-        this.user.isAuthenticated = false;
-        console.error('Refresh token failed:', error);
-      },
-    });
+  refreshToken() {
+    return this.http.post('/api/auth/refresh', {}, {observe: 'response'}).pipe(
+      tap((res: HttpResponse<any>) => {
+        this.getTokenParamsFromResponse(res);
+      })
+    )
   }
 
   logout() {
     return this.http.post('/api/auth/logout', {}).subscribe({
       next: () => {
-        this.getUserFromResponse();
-        console.log('Logged out successfully');
+        this.setUnauthenticated();
       },
       error: (err) => {
         console.error('Failed to logout', err);
       },
     });
+  }
+
+  setTokenExpiresIn(expiresIn: number) {
+    this.tokenExpiresIn = Date.now() + expiresIn * 1000; // Сохраняем время истечения токена
+    this.startTokenRefreshTimer(expiresIn);
+  }
+
+  isTokenExpired(): boolean {
+    if (!this.tokenExpiresIn) return false;
+    return Date.now() >= this.tokenExpiresIn;
+  }
+
+  clearTokenExpiresIn() {
+    this.tokenExpiresIn = null;
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+    }
+  }
+
+  private startTokenRefreshTimer(expiresIn: number) {
+    const tokenRefreshBefore = expiresIn > 1800 ? 180 : 5;
+    const refreshTime = expiresIn - tokenRefreshBefore;
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+    }
+
+    this.tokenRefreshTimer = setTimeout(() => {
+      this.refreshToken().subscribe({
+        next: (response) => {
+        },
+        error: (err) => {
+        },
+      });
+    }, 1000 * refreshTime);
   }
 
 }
