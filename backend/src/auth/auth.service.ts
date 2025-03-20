@@ -8,8 +8,8 @@ import { IUser } from 'src/users/interfaces/user.interface';
 @Injectable()
 export class AuthService {
 
-  readonly authTokenExpiresIn = '3h';
-  readonly refreshTokenExpiresIn = '7d';
+  readonly authTokenExpiresIn = '60s';
+  readonly refreshTokenExpiresIn = '300s';
 
   constructor(
     private userService: UserService,
@@ -51,6 +51,17 @@ export class AuthService {
       access_token: this.jwtService.sign(payload, { expiresIn: this.authTokenExpiresIn }),
       refresh_token: this.jwtService.sign(payload, { expiresIn: this.refreshTokenExpiresIn }),
     };
+  }
+
+  async invalidateRefreshToken(refreshToken: string) {
+    // Находим пользователя по refresh token
+    const user = await this.userService.findOneByRefreshToken(refreshToken);
+    if (!user) {
+      return false;
+    }
+    // Удаляем refresh token
+    const result = await this.userService.updateRefreshToken(user.id, '');
+    return true;
   }
 
 }

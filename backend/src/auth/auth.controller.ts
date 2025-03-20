@@ -61,6 +61,24 @@ export class AuthController {
     return res.send();
   }
 
+  @Post('logout')
+  async logout(@Req() req: Request, @Res() res: Response) {
+    // Получаем refresh token из куки
+    const refreshToken = req?.cookies[UserTokenKeys.REFRESH_TOKEN];
+    if (!refreshToken) {
+      throw new HttpException('Refresh token is missing', HttpStatus.BAD_REQUEST);
+    }
+
+    // Инвалидируем refresh token на бэкенде
+    const invalidated = await this.authService.invalidateRefreshToken(refreshToken);
+    if (!invalidated) {
+      throw new HttpException('Invalidation error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Возвращаем успешный ответ
+    return res.status(200).json({ message: 'Logged out successfully' });
+  }
+
   private setClientTokens(res: Response, tokens: IUserTokenResponseDto) {
     res.header('X-Token-Expires-In', this.authService.authTokenExpiresIn);
     res.cookie(UserTokenKeys.ACCESS_TOKEN, tokens.access_token, { httpOnly: true });

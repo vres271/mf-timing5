@@ -19,6 +19,9 @@ RUN wget https://luarocks.org/releases/luarocks-3.9.2.tar.gz && \
 # Установка lua-resty-jwt через luarocks
 RUN luarocks install lua-resty-jwt
 
+# Устанавливаем lua-resty-redis
+RUN luarocks install lua-resty-redis
+
 # Копирование конфигурации Nginx
 # COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 

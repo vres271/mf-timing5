@@ -18,6 +18,20 @@ services:
       timeout: 10s
       retries: 3
 
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     build:
       context: ./backend
@@ -29,12 +43,16 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "3000:3000"
     secrets:
       - jwt_secret_key
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - app-network
@@ -67,15 +85,17 @@ services:
     secrets:
       - jwt_secret_key
       - ssl_certificate
-      - ssl_private_key      
+      - ssl_private_key
     depends_on:
       - frontend
       - backend
+      - redis
     networks:
       - app-network
 
 volumes:
   postgres_data:
+  redis_data:
 
 secrets:
   jwt_secret_key:
