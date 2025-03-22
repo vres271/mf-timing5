@@ -3,6 +3,7 @@ name: Deploy Application
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 env:
   SSH_HOST: ${{ secrets.SSH_HOST }}
