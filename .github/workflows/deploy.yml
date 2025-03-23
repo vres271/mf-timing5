@@ -26,7 +26,9 @@ jobs:
 
     - name: Copy files to server
       run: |
-        scp -r -o StrictHostKeyChecking=no \
+        rsync -avz \
+          --exclude .git \
+          -e "ssh -o StrictHostKeyChecking=no" \
           ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.PROJECT_DIR }}
 
     - name: Deploy Application
