@@ -43,8 +43,8 @@ jobs:
           Linux-buildx-
 
     - name: Deploy Application
-      uses: appleboy/ssh-action@v1.0.0
       timeout-minutes: 60
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
@@ -52,8 +52,12 @@ jobs:
         script: |
           cd ${{ env.PROJECT_DIR }}
           docker-compose down
-          docker-compose pull
-          docker-compose build --pull --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache-new
+
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new \
+            -t your_image_name .
+
           docker-compose up -d
           docker system prune -f
 
