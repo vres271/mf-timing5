@@ -51,14 +51,30 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd ${{ env.PROJECT_DIR }}
+
+          # Останавливаем существующие контейнеры
           docker-compose down
+
+          # Сборка образов с использованием buildx и кэшированием
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new \
+            -t myapp_backend:latest ./backend
 
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache-new \
-            -t your_image_name .
+            -t myapp_frontend:latest ./frontend
 
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new \
+            -t myapp_nginx:latest ./nginx
+
+          # Запуск контейнеров через docker-compose
           docker-compose up -d
+
+          # Очистка неиспользуемых объектов Docker
           docker system prune -f
 
     - name: Save Docker layers cache
@@ -67,4 +83,12 @@ jobs:
         mkdir -p /tmp/.buildx-cache-new
         docker buildx build \
           --cache-to type=local,dest=/tmp/.buildx-cache-new \
-          -t your_image_name .
+          -t myapp_backend:latest ./backend
+
+        docker buildx build \
+          --cache-to type=local,dest=/tmp/.buildx-cache-new \
+          -t myapp_frontend:latest ./frontend
+
+        docker buildx build \
+          --cache-to type=local,dest=/tmp/.buildx-cache-new \
+          -t myapp_nginx:latest ./nginx
