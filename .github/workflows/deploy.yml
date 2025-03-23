@@ -55,6 +55,9 @@ jobs:
           # Останавливаем существующие контейнеры
           docker-compose down
 
+          # Активируем Docker Buildx
+          docker buildx create --use
+
           # Сборка образов с использованием buildx и кэшированием
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
