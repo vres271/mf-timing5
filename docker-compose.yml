@@ -1,6 +1,9 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:17-alpine
+    container_name: db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -16,9 +19,13 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "com.mft5.version=1.0"
+      - "com.mft5.service=database"
 
   redis:
     image: redis:7-alpine
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
@@ -30,11 +37,16 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "com.mft5.version=1.0"
+      - "com.mft5.service=cache"
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: ghcr.io/vres271/backend:1.0.0
+    container_name: backend
     environment:
       NODE_ENV: production
       DB_HOST: ${DB_HOST}
@@ -60,22 +72,32 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "com.mft5.version=1.0.0"
+      - "com.mft5.service=backend-api"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: ghcr.io/vres271/frontend:1.0.0
+    container_name: frontend
     ports:
       - "80:80"
     depends_on:
       - backend
     networks:
       - app-network
+    labels:
+      - "com.mft5.version=1.0.0"
+      - "com.mft5.service=frontend"
 
   nginx:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    image: ghcr.io/vres271/nginx:1.0.0
+    container_name: nginx
     ports:
       - "8080:443"
       - "443:443"
@@ -91,19 +113,36 @@ services:
       - redis
     networks:
       - app-network
+    labels:
+      - "com.mft5.version=1.0.0"
+      - "com.mft5.service=load-balancer"
 
 volumes:
   postgres_data:
+    driver: local
+    labels:
+      - "com.mft5.volume=postgres-data"
   redis_data:
+    driver: local
+    labels:
+      - "com.mft5.volume=redis-data"
 
 secrets:
   jwt_secret_key:
     file: ./secrets/jwt_secret.key
+    labels:
+      - "com.mft5.secret=jwt-key"
   ssl_certificate:
     file: ./secrets/ssl_certificate.crt
+    labels:
+      - "com.mft5.secret=ssl-cert"
   ssl_private_key:
     file: ./secrets/ssl_private.key
+    labels:
+      - "com.mft5.secret=ssl-key"
 
 networks:
   app-network:
     driver: bridge
+    labels:
+      - "com.mft5.network=application"
