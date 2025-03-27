@@ -1,0 +1,35 @@
+name: Deploy Application by Build and push
+
+on:
+  workflow_dispatch:
+
+env:
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_USER: ${{ secrets.SSH_USER }}
+  SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  PROJECT_DIR: /home/deploy/app/mft5
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and Push Images
+        run: |
+          docker-compose build
+          docker tag myapp_backend:latest your_dockerhub/myapp_backend:latest
+          docker tag myapp_frontend:latest your_dockerhub/myapp_frontend:latest
+          docker tag myapp_nginx:latest your_dockerhub/myapp_nginx:latest
+          docker push your_dockerhub/myapp_backend:latest
+          docker push your_dockerhub/myapp_frontend:latest
+          docker push your_dockerhub/myapp_nginx:latest
+      
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}         
+          script: |
+            cd $PROJECT_DIR
+            docker-compose pull
+            docker-compose up -d
