@@ -83,7 +83,7 @@ jobs:
         run: ssh -o StrictHostKeyChecking=no -T ${{ env.SSH_USER }}@${{ env.SSH_HOST }} exit
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v1.1.1
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -106,7 +106,7 @@ jobs:
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} pull
             
             # Запускаем
-            docker-compose -f ${{ env.COMPOSE_PROD_FILE }} up -d
+            docker-compose -f ${{ env.COMPOSE_PROD_FILE }} up -d --remove-orphans
             
             # Очистка
             docker system prune -af --filter "until=24h"
