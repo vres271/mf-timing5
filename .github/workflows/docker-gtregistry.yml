@@ -37,27 +37,21 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
 
       - name: Build and push nginx
         uses: docker/build-push-action@v5
         with:
           context: ./nginx
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:latest
 
       - name: Upload production compose file
         uses: actions/upload-artifact@v4
@@ -95,17 +89,13 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Копируем production compose файл
-            cat << 'EOF' > ${{ env.COMPOSE_PROD_FILE }}
-            $(cat ${{ env.COMPOSE_PROD_FILE }})
-            EOF
+            cat > ${{ env.COMPOSE_PROD_FILE }} << 'EOL'
+            ${{ steps.download-compose.outputs.content }}
+            EOL
             
             # Останавливаем и обновляем контейнеры
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} down
-            
-            # Подтягиваем новые образы
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} pull
-            
-            # Запускаем
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} up -d --remove-orphans
             
             # Очистка
