@@ -69,10 +69,10 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Download production compose file
-        uses: actions/download-artifact@v4
-        with:
-          name: production-compose
+      #- name: Download production compose file
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: production-compose
 
       # - name: Get compose file content
       #   id: get-content
