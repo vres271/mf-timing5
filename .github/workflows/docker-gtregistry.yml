@@ -22,7 +22,8 @@ jobs:
         run: |
           # Удаляем build-секции и создаем production-версию
           grep -v -A1 'build:' docker-compose.yml | sed '/^\s*$/d' > ${{ env.COMPOSE_PROD_FILE }}
-          echo "Production compose file created"
+          echo "Production compose file created:"
+          cat ${{ env.COMPOSE_PROD_FILE }}
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -31,26 +32,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push images
+      - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.context }}
+          context: ./backend
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ github.sha }}
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
 
       - name: Build and push nginx
         uses: docker/build-push-action@v5
         with:
           context: ./nginx
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:${{ github.sha }}
 
       - name: Upload production compose file
         uses: actions/upload-artifact@v4
@@ -88,13 +95,17 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Копируем production compose файл
-            cat > ${{ env.COMPOSE_PROD_FILE }} << 'EOL'
-            ${{ steps.download-compose.outputs.content }}
-            EOL
+            cat << 'EOF' > ${{ env.COMPOSE_PROD_FILE }}
+            $(cat ${{ env.COMPOSE_PROD_FILE }})
+            EOF
             
             # Останавливаем и обновляем контейнеры
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} down
+            
+            # Подтягиваем новые образы
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} pull
+            
+            # Запускаем
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} up -d --remove-orphans
             
             # Очистка
