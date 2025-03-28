@@ -74,6 +74,12 @@ jobs:
         with:
           name: production-compose
 
+      - name: Get compose file content
+        id: get-content
+        run: |
+          CONTENT=$(cat ${{ env.COMPOSE_PROD_FILE }} | jq -sR .)
+          echo "file_content=$CONTENT" >> $GITHUB_OUTPUT
+
       - name: Install SSH Key
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -94,10 +100,10 @@ jobs:
             # Логинимся в GHCR
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Копируем production compose файл
-            cat << 'EOF' > ${{ env.COMPOSE_PROD_FILE }}
-            $(cat ${{ env.COMPOSE_PROD_FILE }})
-            EOF
+            # Создаем production compose файл
+            cat > ${{ env.COMPOSE_PROD_FILE }} << 'EOL'
+            ${{ steps.get-content.outputs.file_content }}
+            EOL
             
             # Останавливаем и обновляем контейнеры
             docker-compose -f ${{ env.COMPOSE_PROD_FILE }} down
