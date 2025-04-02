@@ -32,27 +32,23 @@ jobs:
       - name: Test SSH connection
         run: ssh -o StrictHostKeyChecking=no -T ${{ env.SSH_USER }}@${{ env.SSH_HOST }} exit
 
-      - name: Prepare and copy nginx config
+      - name: Prepare nginx directory on server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ${{ env.PROJECT_DIR }}/nginx
+            chown ${{ env.SSH_USER }}:${{ env.SSH_USER }} ${{ env.PROJECT_DIR }}/nginx
+            chmod 755 ${{ env.PROJECT_DIR }}/nginx
+
+      - name: Copy nginx config
         run: |
-          # Проверяем наличие nginx.conf
-          if [ -f "src/nginx/nginx.conf" ]; then
-            echo "nginx.conf found, preparing to copy..."
-            
-            # Создаём временную структуру на сервере
-            ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
-              "mkdir -p ${{ env.PROJECT_DIR }}/nginx"
-            
-            # Копируем напрямую без архивации
-            scp -o StrictHostKeyChecking=no src/nginx/nginx.conf \
-              ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.PROJECT_DIR }}/nginx/nginx.conf
-            
-            # Устанавливаем права
-            ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
-              "chmod 644 ${{ env.PROJECT_DIR }}/nginx/nginx.conf"
-          else
-            echo "Warning: nginx.conf not found in src/nginx/"
-            exit 1  # Прерываем выполнение если конфиг отсутствует
-          fi
+          scp -o StrictHostKeyChecking=no ./nginx/nginx.conf \
+            ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.PROJECT_DIR }}/nginx/nginx.conf
+          ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
+            "chmod 644 ${{ env.PROJECT_DIR }}/nginx/nginx.conf"
 
       - name: Setup secrets directory on server
         uses: appleboy/ssh-action@v1
