@@ -45,7 +45,7 @@ jobs:
 
       - name: Copy nginx config
         run: |
-          scp -o StrictHostKeyChecking=no ./nginx/nginx.conf \
+          scp -o StrictHostKeyChecking=no src/nginx/nginx.conf \
             ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.PROJECT_DIR }}/nginx/nginx.conf
           ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
             "chmod 644 ${{ env.PROJECT_DIR }}/nginx/nginx.conf"
