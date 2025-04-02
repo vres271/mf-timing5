@@ -12,7 +12,7 @@ env:
   SSH_HOST: ${{ secrets.SSH_HOST }}
   SSH_USER: ${{ secrets.SSH_USER }}
   PROJECT_DIR: /home/deploy/app/mft5
-  COMPOSE_FILE: docker-compose.yml
+  COMPOSE_FILE: docker-compose.prod.yml
 
 jobs:
   deploy:
