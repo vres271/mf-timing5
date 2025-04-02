@@ -1,0 +1,111 @@
+name: Deploy to Server
+
+on:
+  workflow_dispatch:
+  # workflow_run:
+  #   workflows: ["Build and Push to GHCR"]
+  #   types: [completed]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/mft5
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_USER: ${{ secrets.SSH_USER }}
+  PROJECT_DIR: /home/deploy/app/mft5
+  COMPOSE_FILE: docker-compose.yml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Test SSH connection
+        run: ssh -o StrictHostKeyChecking=no -T ${{ env.SSH_USER }}@${{ env.SSH_HOST }} exit
+
+      - name: Setup secrets directory on server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.PROJECT_DIR }}
+            mkdir -p secrets
+            chmod 700 secrets
+
+      - name: Create JWT secret file
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cat > ${{ env.PROJECT_DIR }}/secrets/jwt_secret.key <<EOF
+            ${{ secrets.JWT_SECRET }}
+            EOF
+            chmod 600 ${{ env.PROJECT_DIR }}/secrets/jwt_secret.key
+
+      - name: Create SSL certificate
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cat > ${{ env.PROJECT_DIR }}/secrets/ssl_certificate.crt <<EOF
+            ${{ secrets.SSL_CERTIFICATE }}
+            EOF
+            chmod 600 ${{ env.PROJECT_DIR }}/secrets/ssl_certificate.crt
+
+      - name: Create SSL private key
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cat > ${{ env.PROJECT_DIR }}/secrets/ssl_private.key <<EOF
+            ${{ secrets.SSL_PRIVATE_KEY }}
+            EOF
+            chmod 600 ${{ env.PROJECT_DIR }}/secrets/ssl_private.key
+
+      - name: Verify secrets files
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            ls -la ${{ env.PROJECT_DIR }}/secrets/
+            echo "JWT secret first line:"
+            head -n 1 ${{ env.PROJECT_DIR }}/secrets/jwt_secret.key
+            echo "SSL cert first line:"
+            head -n 1 ${{ env.PROJECT_DIR }}/secrets/ssl_certificate.crt
+
+      - name: Deploy application
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.PROJECT_DIR }}
+            
+            # Логинимся в GHCR
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Останавливаем и обновляем контейнеры
+            docker-compose -f ${{ env.COMPOSE_FILE }} down
+            
+            # Подтягиваем новые образы
+            docker-compose -f ${{ env.COMPOSE_FILE }} pull
+            
+            # Запускаем
+            docker-compose -f ${{ env.COMPOSE_FILE }} up -d --remove-orphans
+            
+            # Очистка
+            docker system prune -af --filter "until=24h"
