@@ -26,6 +26,24 @@ jobs:
       - name: Test SSH connection
         run: ssh -o StrictHostKeyChecking=no -T ${{ env.SSH_USER }}@${{ env.SSH_HOST }} exit
 
+      - name: Copy nginx configuration
+        run: |
+          # Создаем временный архив с nginx конфигом
+          tar -czf nginx.tar.gz ./nginx/
+          
+          # Копируем архив на сервер
+          scp -o StrictHostKeyChecking=no nginx.tar.gz ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.PROJECT_DIR }}/
+          
+          # Распаковываем архив на сервере
+          ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
+            "cd ${{ env.PROJECT_DIR }} && \
+             tar -xzf nginx.tar.gz && \
+             chmod -R 644 nginx/* && \
+             rm nginx.tar.gz"
+          
+          # Удаляем локальный архив
+          rm nginx.tar.gz
+
       - name: Setup secrets directory on server
         uses: appleboy/ssh-action@v1
         with:
