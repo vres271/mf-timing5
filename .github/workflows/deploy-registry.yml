@@ -18,6 +18,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: 'src'
+
       - name: Install SSH Key
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -26,23 +32,27 @@ jobs:
       - name: Test SSH connection
         run: ssh -o StrictHostKeyChecking=no -T ${{ env.SSH_USER }}@${{ env.SSH_HOST }} exit
 
-      - name: Copy nginx configuration
+      - name: Prepare and copy nginx config
         run: |
-          # Создаем временный архив с nginx конфигом
-          tar -czf nginx.tar.gz ./nginx/
-          
-          # Копируем архив на сервер
-          scp -o StrictHostKeyChecking=no nginx.tar.gz ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.PROJECT_DIR }}/
-          
-          # Распаковываем архив на сервере
-          ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
-            "cd ${{ env.PROJECT_DIR }} && \
-             tar -xzf nginx.tar.gz && \
-             chmod -R 644 nginx/* && \
-             rm nginx.tar.gz"
-          
-          # Удаляем локальный архив
-          rm nginx.tar.gz
+          # Проверяем наличие nginx.conf
+          if [ -f "src/nginx/nginx.conf" ]; then
+            echo "nginx.conf found, preparing to copy..."
+            
+            # Создаём временную структуру на сервере
+            ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
+              "mkdir -p ${{ env.PROJECT_DIR }}/nginx"
+            
+            # Копируем напрямую без архивации
+            scp -o StrictHostKeyChecking=no src/nginx/nginx.conf \
+              ${{ env.SSH_USER }}@${{ env.SSH_HOST }}:${{ env.PROJECT_DIR }}/nginx/nginx.conf
+            
+            # Устанавливаем права
+            ssh -o StrictHostKeyChecking=no ${{ env.SSH_USER }}@${{ env.SSH_HOST }} \
+              "chmod 644 ${{ env.PROJECT_DIR }}/nginx/nginx.conf"
+          else
+            echo "Warning: nginx.conf not found in src/nginx/"
+            exit 1  # Прерываем выполнение если конфиг отсутствует
+          fi
 
       - name: Setup secrets directory on server
         uses: appleboy/ssh-action@v1
