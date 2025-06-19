@@ -1,6 +1,6 @@
 FROM openresty/openresty:latest
 
-# Установка зависимостей для обновления luarocks
+# Установка зависимостей
 RUN apt-get update && apt-get install -y \
     git \
     wget \
@@ -24,15 +24,17 @@ RUN apt-get update && apt-get install -y \
 
 # Клонируем репозитории с библиотеками
 RUN git clone https://github.com/SkyLothar/lua-resty-jwt.git /tmp/lua-resty-jwt \
-    && git clone https://github.com/openresty/lua-resty-redis.git /tmp/lua-resty-redis
+    && git clone https://github.com/openresty/lua-resty-redis.git /tmp/lua-resty-redis \
+    && git clone https://github.com/jkeys089/lua-resty-evp.git /tmp/lua-resty-evp
 
 # Копируем файлы библиотек напрямую в lualib
 RUN mkdir -p /usr/local/openresty/lualib/resty \
     && cp /tmp/lua-resty-jwt/lib/resty/jwt* /usr/local/openresty/lualib/resty/ \
-    && cp /tmp/lua-resty-redis/lib/resty/redis.lua /usr/local/openresty/lualib/resty/
+    && cp /tmp/lua-resty-redis/lib/resty/redis.lua /usr/local/openresty/lualib/resty/ \
+    && cp /tmp/lua-resty-evp/lib/resty/evp.lua /usr/local/openresty/lualib/resty/
 
 # Очистка временных файлов
-RUN rm -rf /tmp/lua-resty-jwt /tmp/lua-resty-redis
+RUN rm -rf /tmp/lua-resty-jwt /tmp/lua-resty-redis /tmp/lua-resty-evp
 
 # Копирование конфигурации Nginx
 # COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
