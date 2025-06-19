@@ -2,45 +2,35 @@ FROM openresty/openresty:latest
 
 # Установка зависимостей
 RUN apt-get update && apt-get install -y \
-    git \
     wget \
     unzip \
     build-essential \
     libssl-dev
 
-# Установка последней версии luarocks
-# RUN wget https://luarocks.org/releases/luarocks-3.9.2.tar.gz && \
-#     tar -xzf luarocks-3.9.2.tar.gz && \
-#     cd luarocks-3.9.2 && \
-#     ./configure && \
-#     make && \
-#     make install
+# Скачивание и распаковка библиотек
+RUN wget https://github.com/SkyLothar/lua-resty-jwt/archive/master.tar.gz -O /tmp/lua-resty-jwt.tar.gz \
+    && tar -xzf /tmp/lua-resty-jwt.tar.gz -C /tmp \
+    && mv /tmp/lua-resty-jwt-master /tmp/lua-resty-jwt \
+    && rm /tmp/lua-resty-jwt.tar.gz
 
-# Установка lua-resty-jwt через luarocks
-# RUN luarocks install lua-resty-jwt
+RUN wget https://github.com/openresty/lua-resty-redis/archive/master.tar.gz -O /tmp/lua-resty-redis.tar.gz \
+    && tar -xzf /tmp/lua-resty-redis.tar.gz -C /tmp \
+    && mv /tmp/lua-resty-redis-master /tmp/lua-resty-redis \
+    && rm /tmp/lua-resty-redis.tar.gz
 
-# Устанавливаем lua-resty-redis
-# RUN luarocks install lua-resty-redis
+RUN wget https://github.com/jkeys089/lua-resty-evp/archive/master.tar.gz -O /tmp/lua-resty-evp.tar.gz \
+    && tar -xzf /tmp/lua-resty-evp.tar.gz -C /tmp \
+    && mv /tmp/lua-resty-evp-master /tmp/lua-resty-evp \
+    && rm /tmp/lua-resty-evp.tar.gz
 
-# Клонируем репозитории с библиотеками
-RUN git clone https://github.com/SkyLothar/lua-resty-jwt.git /tmp/lua-resty-jwt \
-    && git clone https://github.com/openresty/lua-resty-redis.git /tmp/lua-resty-redis \
-    && git clone https://github.com/jkeys089/lua-resty-evp.git /tmp/lua-resty-evp
-
-# Копируем файлы библиотек напрямую в lualib
+# Копирование файлов библиотек
 RUN mkdir -p /usr/local/openresty/lualib/resty \
     && cp /tmp/lua-resty-jwt/lib/resty/jwt* /usr/local/openresty/lualib/resty/ \
     && cp /tmp/lua-resty-redis/lib/resty/redis.lua /usr/local/openresty/lualib/resty/ \
     && cp /tmp/lua-resty-evp/lib/resty/evp.lua /usr/local/openresty/lualib/resty/
 
-# Очистка временных файлов
-RUN rm -rf /tmp/lua-resty-jwt /tmp/lua-resty-redis /tmp/lua-resty-evp
+# Очистка
+RUN rm -rf /tmp/lua-resty-*
 
-# Копирование конфигурации Nginx
-# COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-
-# Открытие порта 80
 EXPOSE 80
-
-# Запуск Nginx
 CMD ["nginx", "-g", "daemon off;"]
