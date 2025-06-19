@@ -122,3 +122,10 @@ chmod 644 /home/deploy/app/mft5/secrets/jwt_secret.key
     - `jwt_secret.key` — секретный ключ для JWT.
     - `ssl_certificate.crt` — SSL сертификат.
     - `ssl_private.key` — приватный ключ SSL.
+
+
+### 3. **Workflow для GitHub Actions**
+
+- `build-push-registry.yml` - Собирает новые Docker-образы для backend, frontend и nginx, а затем пушит их в GitHub Container Registry (GHCR). Ваши изменения попадут в новый Docker-образ и будут загружены в реестр.
+
+- `deploy-registry.yml` - Не собирает и не пушит образы, а только деплоит уже собранные образы на сервер. Сервер скачает (pull) свежий образ из реестра и запустит его.
