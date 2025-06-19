@@ -21,7 +21,7 @@ RUN wget https://github.com/openresty/lua-resty-redis/archive/master.tar.gz -O /
 # Копируем файлы библиотек напрямую в lualib
 RUN mkdir -p /usr/local/openresty/lualib/resty \
     && cp /tmp/lua-resty-jwt/lib/resty/jwt* /usr/local/openresty/lualib/resty/ \
-    && cp /tmp/lua-resty-jwt/lib/resty/evp.lua /usr/local/openresty/lualib/resty/ \  # Исправлено!
+    && cp /tmp/lua-resty-jwt/lib/resty/evp.lua /usr/local/openresty/lualib/resty/ \
     && cp /tmp/lua-resty-redis/lib/resty/redis.lua /usr/local/openresty/lualib/resty/
 
 # Очистка временных файлов
