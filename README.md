@@ -73,3 +73,52 @@ openssl x509 -in ssl_certificate.crt -text -noout
 ## Адрес фронта
 
 https://localhost:8080
+
+
+## Деплой
+
+### 1. **Права на `secrets`**
+
+После деплоя убедитесь, что файл секрета `jwt_secret.key` в директории secrets на сервере имеет права доступа 644 (чтение для всех).
+
+Это необходимо для корректной работы проверки токенов через Nginx и lua-resty-jwt.
+
+Если права выставляются автоматически через CI/CD, всё равно рекомендуется проверить их вручную при первом деплое или при изменении инфраструктуры:
+
+```bash
+ls -l /home/deploy/app/mft5/secrets/jwt_secret.key
+```
+
+При необходимости установите права:
+
+```bash
+chmod 644 /home/deploy/app/mft5/secrets/jwt_secret.key
+```
+Без правильных прав файл может быть недоступен для чтения внутри контейнера, что приведёт к ошибке 500 при обращении к API
+
+### 2. **Структура файлов**
+
+Пример файловой структуры проекта на сервере:
+
+```
+/home/deploy/app/mft5
+├── docker-compose.prod.yml
+├── .env
+├── nginx/
+│   └── nginx.conf
+└── secrets/
+    ├── jwt_secret.key
+    ├── ssl_certificate.crt
+    └── ssl_private.key
+```
+
+
+**Описание:**
+
+- `docker-compose.prod.yml` — основной файл конфигурации Docker Compose для продакшн-среды.
+- `.env` — файл переменных окружения.
+- `nginx/nginx.conf` — конфигурация Nginx.
+- `secrets/` — директория для секретных файлов:
+    - `jwt_secret.key` — секретный ключ для JWT.
+    - `ssl_certificate.crt` — SSL сертификат.
+    - `ssl_private.key` — приватный ключ SSL.
