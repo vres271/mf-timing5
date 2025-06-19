@@ -71,7 +71,7 @@ jobs:
             cat > ${{ env.PROJECT_DIR }}/secrets/jwt_secret.key <<EOF
             ${{ secrets.JWT_SECRET }}
             EOF
-            chmod 600 ${{ env.PROJECT_DIR }}/secrets/jwt_secret.key
+            chmod 644 ${{ env.PROJECT_DIR }}/secrets/jwt_secret.key
 
       - name: Create SSL certificate
         uses: appleboy/ssh-action@v1
