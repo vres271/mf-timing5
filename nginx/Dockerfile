@@ -18,18 +18,13 @@ RUN wget https://github.com/openresty/lua-resty-redis/archive/master.tar.gz -O /
     && mv /tmp/lua-resty-redis-master /tmp/lua-resty-redis \
     && rm /tmp/lua-resty-redis.tar.gz
 
-RUN wget https://github.com/jkeys089/lua-resty-evp/archive/master.tar.gz -O /tmp/lua-resty-evp.tar.gz \
-    && tar -xzf /tmp/lua-resty-evp.tar.gz -C /tmp \
-    && mv /tmp/lua-resty-evp-master /tmp/lua-resty-evp \
-    && rm /tmp/lua-resty-evp.tar.gz
-
-# Копирование файлов библиотек
+# Копируем файлы библиотек напрямую в lualib
 RUN mkdir -p /usr/local/openresty/lualib/resty \
     && cp /tmp/lua-resty-jwt/lib/resty/jwt* /usr/local/openresty/lualib/resty/ \
-    && cp /tmp/lua-resty-redis/lib/resty/redis.lua /usr/local/openresty/lualib/resty/ \
-    && cp /tmp/lua-resty-evp/lib/resty/evp.lua /usr/local/openresty/lualib/resty/
+    && cp /tmp/lua-resty-jwt/lib/resty/evp.lua /usr/local/openresty/lualib/resty/ \  # Исправлено!
+    && cp /tmp/lua-resty-redis/lib/resty/redis.lua /usr/local/openresty/lualib/resty/
 
-# Очистка
+# Очистка временных файлов
 RUN rm -rf /tmp/lua-resty-*
 
 EXPOSE 80
