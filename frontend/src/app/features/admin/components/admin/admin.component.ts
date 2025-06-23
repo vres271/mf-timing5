@@ -15,12 +15,11 @@ interface IUser {
 }
 
 @Component({
-  selector: 'app-admin',
-  standalone: true,
-  imports: [],
-  providers: [TokensStorageService],
-  templateUrl: './admin.component.html',
-  styleUrl: './admin.component.css'
+    selector: 'app-admin',
+    imports: [],
+    providers: [TokensStorageService],
+    templateUrl: './admin.component.html',
+    styleUrl: './admin.component.css'
 })
 export class AdminComponent {
   title = 'mft5-frontend';
