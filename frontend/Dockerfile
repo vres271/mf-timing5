@@ -1,5 +1,5 @@
 # Этап сборки
-FROM node:22 as build
+FROM node:24.2.0 as build
 
 WORKDIR /app
 COPY package.json package-lock.json ./
