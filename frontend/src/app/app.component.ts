@@ -19,7 +19,7 @@ interface IUser {
 
 @Component({
   selector: 'app-root',
-  standalone: true,
+
   imports: [RouterOutlet, RouterLink],
   providers: [TokensStorageService ],
   templateUrl: './app.component.html',
