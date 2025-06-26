@@ -3,7 +3,8 @@ FROM node:24.2.0 as build
 
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+# флаг --legacy-peer-deps нужен так как используется primeng 19 (который официально не совместим, но вроде работает) с angular 20. Нужно убрать после перехода на своместимые версии
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 

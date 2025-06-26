@@ -23,7 +23,11 @@
     <div><button (click)="refreshToken()">Refresh Token</button></div>
 }
     <div><button (click)="refreshToken()">Refresh Token</button></div> -->
-
+<div class="flex-row align-items-center gap-1">
+    <p-button label="Refresh Token" (onClick)="refreshToken()" />
+    <p-checkbox [(ngModel)]="checked" [binary]="true" />
+    <span>{{checked ? 'Yes' : 'No'}}</span>
+</div>
 <br>
 <nav class="router-links">
     <a routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">login</a>

@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { TokensStorageService } from './core/services/tokens-storage.service';
 import { AuthService } from './core/services/auth.service';
-
+import { Button } from 'primeng/button';
+import { Checkbox } from 'primeng/checkbox';
+import { FormsModule } from '@angular/forms';
 
 interface IError {
   message: string[],
@@ -20,7 +22,7 @@ interface IUser {
 @Component({
   selector: 'app-root',
 
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, Button, Checkbox, FormsModule],
   providers: [TokensStorageService ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -39,6 +41,7 @@ export class AppComponent implements OnInit {
   }
   
   user: IUser|null = null;
+  checked = false;
 
   constructor(
     private tokensStorageService: TokensStorageService,
