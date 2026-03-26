@@ -5,7 +5,10 @@ import { AuthService } from './core/services/auth.service';
 import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';
-
+import { ButtonComponent } from './shared/ui/components/button/button.component';
+import { InputTextComponent } from "./shared/ui/components/input/input.component";
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordComponent } from "./shared/ui/components/password/password.component";
 interface IError {
   message: string[],
   error: string,
@@ -22,7 +25,7 @@ interface IUser {
 @Component({
   selector: 'app-root',
 
-  imports: [RouterOutlet, RouterLink, Button, Checkbox, FormsModule],
+  imports: [RouterOutlet, RouterLink, Button, Checkbox, FormsModule, ButtonComponent, InputTextComponent, PasswordComponent],
   providers: [TokensStorageService ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -33,7 +36,7 @@ export class AppComponent implements OnInit {
   backendHealth = '';
   users: any[] = [];
   error: IError|null = null;
-
+value1='';
   jwt = '';
   jwt_refresh = '';
   setJwt(e: any) {
@@ -42,6 +45,12 @@ export class AppComponent implements OnInit {
   
   user: IUser|null = null;
   checked = false;
+  isBtnLoading = false;
+
+  creds = {
+    name: '',
+    password: '',
+  }
 
   constructor(
     private tokensStorageService: TokensStorageService,
@@ -132,6 +141,14 @@ export class AppComponent implements OnInit {
     //     });
     //     this.authService.getUserDataFromToken();
     //   });
+  }
+
+  testClick() {
+    this.isBtnLoading = true;
+    setTimeout(() => {
+      this.checked = !this.checked;
+      this.isBtnLoading = false;
+    }, 1000)
   }
 
 }

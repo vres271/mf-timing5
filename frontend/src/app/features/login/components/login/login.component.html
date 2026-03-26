@@ -1,1 +1,17 @@
-<p>login works!</p>
+<h2>Регистрация пользователя</h2>
+<form [formGroup]="form" class="flex-column gap-1" style="width: 400px">
+    <div class="flex-column">
+        <label>Имя пользователя:</label>
+        <mft-input-text formControlName="name" placeholder="Введите имя"/>
+    </div>
+    <div class="flex-column">
+        <label>Email:</label>
+        <mft-input-text formControlName="email" placeholder="Введите email"/>
+    </div>
+
+    <div class="flex-column">
+        <label>Пароль:</label>
+        <mft-password formControlName="password" placeholder="Введите пароль" [toggleMask]="true" [feedback]="true"/>
+    </div>
+    <mft-button [disabled]="form.invalid" (onClick)="onSubmit()" label="Send form" />
+</form>

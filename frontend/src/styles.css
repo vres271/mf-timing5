@@ -1,6 +1,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;700&display=swap');
+
 body {
+
+    min-height: 100vh;
+    background: var(--surface-ground);
+    color: var(--text-color);
     font-family: Roboto;
+    /*  font-family: var(--font-family); */
+
+    .topbar {
+        background: var(--p-surface-0);
+        color: var(--p-primary-color-text);
+    }
+
+    .ng-invalid.ng-touched>input,
+    .ng-invalid.ng-touched>select,
+    .ng-invalid.ng-touched>textarea {
+        border-color: var(--p-button-danger-border-color);
+    }
+
+    .flex-column {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flex-row {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .margin-left-auto {
+        margin-left: auto;
+    }
+
+    .gap-1 {
+        gap: 1rem;
+    }
+
+
+
+    /* font-family: Roboto;
     font-size: 16px;
     background-color: lightslategray;
     color: white;
@@ -23,13 +66,26 @@ body {
         tr:nth-child(even) {
             background-color: rgba(169, 169, 169, 0.451);
         }
-    }
+    } */
 
-    .add-user {
+    /* .add-user {
         margin-bottom: 20px;
-    }
+    } */
 
-    input {
+    /* .ng-valid > input,
+    .ng-valid > select,
+    .ng-valid > textarea {
+        border-color: #42A948;
+    } */
+
+
+    /* .ng-pristine > input,
+    .ng-pristine > select,
+    .ng-pristine > textarea {
+        border-color: #ccc;
+    } */
+
+    /* input {
         padding: 8px;
         &:focus {
             outline: none;
@@ -61,28 +117,8 @@ body {
         .details {
             margin-bottom: 10px;
         }
-    }
+    } */
 
-    .flex-column {
-        display: flex;
-        flex-direction: column;
-    }
 
-    .flex-row {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .align-items-center {
-        align-items: center;
-    }
-
-    .margin-left-auto {
-        margin-left: auto;
-    }
-
-    .gap-1 {
-        gap: 1rem;
-    }
 
 }

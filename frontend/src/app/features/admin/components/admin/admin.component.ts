@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 import { TokensStorageService } from '../../../../core/services/tokens-storage.service';
 import { HttpClient } from '@angular/common/http';
+import { InputTextComponent } from "../../../../shared/ui/components/input/input.component";
+import { ButtonComponent } from "../../../../shared/ui/components/button/button.component";
+import { PasswordComponent } from "../../../../shared/ui/components/password/password.component";
+import { TableComponent } from "../../../../shared/ui/components/table/table.component";
 interface IError {
   message: string[],
   error: string,
@@ -16,7 +20,7 @@ interface IUser {
 
 @Component({
     selector: 'app-admin',
-    imports: [],
+    imports: [InputTextComponent, ButtonComponent, PasswordComponent, TableComponent],
     providers: [TokensStorageService],
     templateUrl: './admin.component.html',
     styleUrl: './admin.component.css'
@@ -74,7 +78,10 @@ export class AdminComponent {
         }
         this.users.push(res);
       })
-;
+      .catch(error => {
+        this.errorHandler(error.error);
+      })
+
   }
 
   request(url: string, method?: string, data?: Object) {
