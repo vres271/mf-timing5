@@ -39,7 +39,7 @@ import { TableModule } from 'primeng/table';
 export class TableComponent<T = any> {
 
   @Input() data: T[] = [];
-  columns = [
+  @Input() columns = [
     // { field: 'id', header: 'ID' },
     { field: 'name', header: 'Имя' },
     { field: 'roles', header: 'roles' },

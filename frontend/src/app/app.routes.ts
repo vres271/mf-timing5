@@ -6,6 +6,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { AccessDeniedComponent } from './features/access-denied/components/access-denied/access-denied.component';
 import { ApplicationConfig } from '@angular/core';
+import { RacesComponent } from './features/races/races.component';
 
 export const appRoutes: Routes = [
     { path: '', component: HomeComponent },
@@ -16,6 +17,12 @@ export const appRoutes: Routes = [
       canActivate: [AuthGuard, RoleGuard], // Применение Guards
       data: { roles: ['admin'] }, // Роли, необходимые для доступа
     },
+    {
+      path: 'races',
+      component: RacesComponent,
+      canActivate: [AuthGuard, RoleGuard],
+      data: { roles: ['admin'] },
+    },    
     { path: 'access-denied', component: AccessDeniedComponent },
     { path: '**', redirectTo: '' }, // Перенаправление на главную страницу
   ];
