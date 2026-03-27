@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { InitService } from './init/init.service';
+import { RacesModule } from './races/races.module';
+import { Race } from './races/entities/race.entity';
 
 
 @Module({
@@ -17,11 +19,12 @@ import { InitService } from './init/init.service';
       username: process.env.DB_USER || 'youruser',
       password: process.env.DB_PASSWORD || 'yourpassword',
       database: process.env.DB_NAME || 'yourdb',
-      entities: [User],
+      entities: [User, Race],
       synchronize: true, 
     }),
     UsersModule,
-    AuthModule
+    AuthModule,
+    RacesModule,
   ],
   controllers: [AppController],
   providers: [AppService, InitService],

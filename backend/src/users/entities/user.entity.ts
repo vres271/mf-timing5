@@ -27,6 +27,3 @@ export class User implements IUser {
   @Column({ nullable: true, select: false })
   refreshToken: string;
 }
-
-// пароль 000000
-// $2b$04$BrbxW7/iLnSOJt9cvBYhj.a5zIHnTWqtL3mkUAHLINXx9S/qbX3PC
