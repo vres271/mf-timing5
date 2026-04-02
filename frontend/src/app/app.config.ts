@@ -9,7 +9,7 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
 function initializeApp(authService: AuthService) {
-  return () => authService.checkAuth();
+  return () => authService.checkAuth().subscribe();
 }
 
 export const appConfig: ApplicationConfig = {

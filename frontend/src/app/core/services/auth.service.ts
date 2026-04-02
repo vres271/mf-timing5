@@ -1,56 +1,42 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { tap } from 'rxjs';
-
-interface IUser {
-  id: string,
-  isAuthenticated: boolean, 
-  roles: string[], 
-  name: string, 
-}
-
-interface IUserDTO {
-  id: string,
-  roles: string[], 
-  name: string, 
-}
+import { HttpResponse } from '@angular/common/http';
+import { catchError, tap } from 'rxjs';
+import { IUser, IUserDTO } from '../models/user.interface';
+import { AuthApiService } from './auth-api.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
 
-  private user: IUser = {
-    id: '',
-    isAuthenticated: false, 
-    roles: [], 
-    name: '', 
-  };
+  private user: IUser | null = null;
+  private isAuth = false;
 
   private tokenExpiresIn: number | null = null;
   private tokenRefreshTimer: any = null;
 
+  private readonly TOKEN_LONG_THRESHOLD = 1800;  // 30 мин
+  private readonly LONG_REFRESH_BEFORE = 180;   // 3 мин до конца
+  private readonly SHORT_REFRESH_BEFORE = 5;    // 5 сек до конца  
+
   constructor(
-    private http: HttpClient,
+    private authApi: AuthApiService,
   ) {
   }
 
-  // Проверка авторизации
   isAuthenticated(): boolean {
-    return this.user.isAuthenticated;
+    return this.isAuth;
   }
 
-  // Проверка ролей
   hasRole(role: string): boolean {
-    return this.user.roles.includes(role);
+    return this.getUser()?.roles.includes(role) || false;
   }
 
-  // Получение ролей
-  getRoles(): string[] {
-    return this.user.roles;
+  getRoles(): string[] | undefined {
+    return this.getUser()?.roles;
   }
 
-  getUser(): IUser {
+  getUser(): IUser | null {
     return this.user;
   }
 
@@ -58,12 +44,11 @@ export class AuthService {
     if (response?.id) {
       this.user = {
         ...response,
-        isAuthenticated: true
       }
+      this.isAuth = true;
     } else {
-      this.user.id = '';
-      this.user.isAuthenticated = false;
-      this.user.roles = [];
+      this.user = null;
+      this.isAuth = false;
     }
   }
 
@@ -80,31 +65,34 @@ export class AuthService {
   }
 
   checkAuth() {
-    return this.http.get<IUserDTO>('/api/auth/me', {observe: 'response'}).subscribe({
-      next: (res: HttpResponse<IUserDTO>) => {
+    return this.authApi.checkAuth().pipe(
+      tap(res => {
         this.getUserFromResponse(res.body);
         this.getTokenParamsFromResponse(res);
-      },
-      error: (err) => {
-        this.setUnauthenticated()
-      },
-    });
+      }),
+      catchError(err => {
+        this.setUnauthenticated();
+        throw err;
+      })
+    );
   }
 
-  login(credentials: { name: string; password: string }): void {
-    this.http.post<IUserDTO>('/api/auth/login', credentials, {observe: 'response'}).subscribe({
-      next: (res: HttpResponse<IUserDTO>) => {
+
+  login(credentials: { name: string; password: string }) {
+    return this.authApi.login(credentials).pipe(
+      tap(res => {
         this.getUserFromResponse(res.body);
         this.getTokenParamsFromResponse(res);
-      },
-      error: (error) => {
+      }),
+      catchError(err => {
         this.setUnauthenticated();
-      },
-    });
+        throw err;
+      })
+    )
   }
 
   refreshToken() {
-    return this.http.post('/api/auth/refresh', {}, {observe: 'response'}).pipe(
+    return this.authApi.refresh().pipe(
       tap((res: HttpResponse<any>) => {
         this.getTokenParamsFromResponse(res);
       })
@@ -112,14 +100,15 @@ export class AuthService {
   }
 
   logout() {
-    return this.http.post('/api/auth/logout', {}).subscribe({
-      next: () => {
+    return this.authApi.logout().pipe(
+      tap(res => {
         this.setUnauthenticated();
-      },
-      error: (err) => {
+      }),
+      catchError(err => {
         console.error('Failed to logout', err);
-      },
-    });
+        throw err;
+      })
+    )
   }
 
   setTokenExpiresIn(expiresIn: number) {
@@ -140,7 +129,10 @@ export class AuthService {
   }
 
   private startTokenRefreshTimer(expiresIn: number) {
-    const tokenRefreshBefore = expiresIn > 1800 ? 180 : 5;
+    const tokenRefreshBefore = expiresIn > this.TOKEN_LONG_THRESHOLD
+      ? this.LONG_REFRESH_BEFORE
+      : this.SHORT_REFRESH_BEFORE;
+
     const refreshTime = expiresIn - tokenRefreshBefore;
     if (this.tokenRefreshTimer) {
       clearTimeout(this.tokenRefreshTimer);
@@ -148,10 +140,8 @@ export class AuthService {
 
     this.tokenRefreshTimer = setTimeout(() => {
       this.refreshToken().subscribe({
-        next: (response) => {
-        },
-        error: (err) => {
-        },
+        next: () => { },  // Пустой next
+        error: () => { }, // Пустой error
       });
     }, 1000 * refreshTime);
   }

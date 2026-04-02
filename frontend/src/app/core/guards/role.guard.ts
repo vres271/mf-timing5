@@ -16,7 +16,7 @@ export class RoleGuard implements CanActivate {
     const expectedRoles = route.data['roles'] as Array<string>; // Роли, необходимые для доступа
     const userRoles = this.authService.getRoles();
     // Проверка, есть ли у пользователя хотя бы одна из необходимых ролей
-    const hasRole = expectedRoles.some((role) => userRoles.includes(role));
+    const hasRole = expectedRoles.some((role) => userRoles?.includes(role));
 
     if (hasRole) {
       return true;

@@ -4,8 +4,8 @@
     <div class="margin-left-auto">
         @if (authService.isAuthenticated()) {
             <div class="flex-row align-items-center gap-1">
-                <div>{{ authService.getUser().name }}</div>
-                <div>[{{ authService.getUser().roles }}]</div>
+                <div>{{ authService.getUser()?.name}}</div>
+                <div>[{{ authService.getUser()?.roles }}]</div>
                 <mft-button (onClick)="refreshToken()" label="Refresh Token"/>
                 <mft-button (onClick)="logout()" label="Logout"/>
             </div>
