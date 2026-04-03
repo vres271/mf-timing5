@@ -1,23 +1,14 @@
-import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, signal, computed, ChangeDetectionStrategy, effect } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY } from 'rxjs';
 import { InputTextComponent } from '../../shared/ui/components/input/input.component';
 import { ButtonComponent } from '../../shared/ui/components/button/button.component';
 import { TableComponent } from '../../shared/ui/components/table/table.component';
-import { TokensStorageService } from '../../core/services/tokens-storage.service';
+import { RacesService } from './races.service';
+import { IRace } from './models/race.interface';
+import { CommonModule } from '@angular/common';
+import { IError } from '../../core/models/error.interface';
 
-interface IError {
-  message: string[];
-  error: string;
-  statusCode: number;
-}
-
-interface IRace {
-  id: string;
-  name: string;
-  description?: string;
-  startsAt: Date;
-  endsAt?: Date;
-}
 
 type RaceColumn = {
   field: keyof IRace;
@@ -26,81 +17,80 @@ type RaceColumn = {
 
 @Component({
   selector: 'app-races',
-  standalone: true,
-  imports: [InputTextComponent, ButtonComponent, TableComponent],
-  providers: [TokensStorageService],
   templateUrl: './races.component.html',
+  standalone: true,
+  imports: [CommonModule, InputTextComponent, ButtonComponent, TableComponent],
+  providers: [RacesService],
+  changeDetection: ChangeDetectionStrategy.OnPush 
 })
 export class RacesComponent {
-  races: IRace[] = [];
-  raceError: IError | null = null;
-
-  jwt = '';
-
-  raceColumns: RaceColumn[] = [
+  // Signals состояния
+  races = signal<IRace[]>([]);
+  raceError = signal<IError | null>(null);
+  
+  // Computed для таблицы
+  raceColumns = signal<RaceColumn[]>([
     { field: 'name', header: 'Название' },
     { field: 'description', header: 'Описание' },
     { field: 'startsAt', header: 'Начало' },
-    { field: 'endsAt', header: 'Окончание' },
-  ];
+    { field: 'endsAt', header: 'Окончание' }
+  ]);
 
-  constructor(
-    private tokensStorageService: TokensStorageService,
-    private http: HttpClient,
-  ) {}
-
-  ngOnInit() {
-    this.jwt = this.tokensStorageService.getAccessToken() || '';
-    this.request('api/races')
-      .then(res => {
-        this.races = res as IRace[];
-      });
+  constructor(private racesService: RacesService) {
+    // Загрузка при инициализации
+    this.loadRaces();
   }
 
-  request(url: string, method?: string, data?: Object) {
-    return this.http
-      .request(method || 'GET', url, {
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .toPromise();
+  private loadRaces(): void {
+    const racesSignal = toSignal(
+      this.racesService.get().pipe(
+        catchError(err => {
+          this.raceError.set(this.handleError(err));
+          return EMPTY;
+        })
+      ),
+      { initialValue: [] }
+    );
+    
+    // Авто-обновление при изменении
+    effect(() => {
+      this.races.set(racesSignal());
+    });
   }
 
-  addRace(name: string, description: string | null) {
-    this.raceError = null;
-    this.request('api/races', 'POST', { name, description })
-      .then((res: any) => {
-        if (res.error) {
-          this.handleError(res);
-          return;
-        }
-        this.races = [...this.races, res];
-      })
-      .catch(error => {
-        this.handleError(error.error);
-      });
+  addRace(name: string | null, desc: string | null): void {
+    if (!name?.trim()) return;
+    
+    const race: Partial<IRace> = {
+      name: name.trim(),
+      description: desc?.trim() || undefined,
+      startsAt: new Date(),
+      endsAt: undefined
+    };
+
+    this.racesService.create(race as IRace).subscribe({
+      next: newRace => {
+        this.races.update(races => [newRace, ...races]);
+        this.raceError.set(null);  // Очистка ошибки
+      },
+      error: err => this.raceError.set(this.handleError(err))
+    });
   }
 
-  deleteRace(id: string) {
-    this.request(`api/races/${id}`, 'DELETE')
-      .then((res: any) => {
-        if (res.error) {
-          this.handleError(res);
-          return;
-        }
-        this.races = this.races.filter(r => r.id !== id);
-      })
-      .catch(error => {
-        this.handleError(error.error);
-      });
+  deleteRace(id: string): void {
+    this.racesService.delete(id).subscribe({
+      next: () => {
+        this.races.update(races => races.filter(race => race.id !== id));
+      },
+      error: err => this.raceError.set(this.handleError(err))
+    });
   }
 
-  handleError(error: IError) {
-    this.raceError = {
-      ...error,
-      message: Array.isArray(error.message) ? error.message : [error.message],
+  private handleError(error: any): IError {
+    return {
+      statusCode: error.status || 0,
+      error: error.error || 'Unknown error',
+      message: Array.isArray(error.message) ? error.message : [error.message || 'Server error']
     };
   }
 }

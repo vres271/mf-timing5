@@ -4,20 +4,18 @@
     <mft-input-text placeholder="Name" #name />
     <mft-input-text placeholder="Description (optional)" #desc />
     <mft-button
-      (onClick)="addRace(
-        name.value || '',
-        desc.value || null
-      )"
+      (onClick)="addRace(name.value, desc.value)"
       label="Add Race" />
-    @if (raceError) {
+    
+    @if (raceError()) {
       <div class="error">
-        <div class="header">{{ raceError.statusCode }} {{ raceError.error }}</div>
-        @for (message of raceError.message; track $index) {
+        <div class="header">{{ raceError()?.statusCode }} {{ raceError()?.error }}</div>
+        @for (message of raceError()?.message ?? []; track $index) {
           <div class="detail">{{ message }}</div>
         }
       </div>
     }
   </div>
 
-  <mft-table [data]="races" [columns]="raceColumns"></mft-table>
+  <mft-table [data]="races()" [columns]="raceColumns()"></mft-table>
 </div>
