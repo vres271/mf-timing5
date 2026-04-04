@@ -1,12 +1,12 @@
-import { provideRouter, Routes, withDebugTracing } from '@angular/router';
+import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/components/home/home.component';
 import { LoginComponent } from './features/login/components/login/login.component';
 import { AdminComponent } from './features/admin/components/admin/admin.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { AccessDeniedComponent } from './features/access-denied/components/access-denied/access-denied.component';
-import { ApplicationConfig } from '@angular/core';
 import { RacesComponent } from './features/races/races.component';
+import { UsersComponent } from './features/users/users.component';
 
 export const appRoutes: Routes = [
     { path: '', component: HomeComponent },
@@ -20,6 +20,12 @@ export const appRoutes: Routes = [
     {
       path: 'races',
       component: RacesComponent,
+      canActivate: [AuthGuard, RoleGuard],
+      data: { roles: ['admin'] },
+    },    
+    {
+      path: 'users',
+      component: UsersComponent,
       canActivate: [AuthGuard, RoleGuard],
       data: { roles: ['admin'] },
     },    

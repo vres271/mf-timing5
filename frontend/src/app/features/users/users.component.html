@@ -1,0 +1,21 @@
+<h2>Users</h2>
+<div style="background: white; padding: 1rem;" class="flex-column">
+  <div class="add-user flex-row gap-1">
+    <mft-input-text placeholder="Name" #name />
+    <mft-input-text placeholder="Description (optional)" #desc />
+    <mft-button
+      (onClick)="addUser(name.value, desc.value)"
+      label="Add User" />
+    
+    @if (userError()) {
+      <div class="error">
+        <div class="header">{{ userError()?.statusCode }} {{ userError()?.error }}</div>
+        @for (message of userError()?.message ?? []; track $index) {
+          <div class="detail">{{ message }}</div>
+        }
+      </div>
+    }
+  </div>
+
+  <mft-table [data]="users()" [columns]="userColumns()"></mft-table>
+</div>
