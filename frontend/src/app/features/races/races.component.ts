@@ -43,7 +43,7 @@ export class RacesComponent {
 
   private loadRaces(): void {
     const racesSignal = toSignal(
-      this.racesService.get().pipe(
+      this.racesService.getList().pipe(
         catchError(err => {
           this.raceError.set(this.handleError(err));
           return EMPTY;
