@@ -5,6 +5,7 @@ import { InputTextComponent } from "../../../../shared/ui/components/input/input
 import { ButtonComponent } from "../../../../shared/ui/components/button/button.component";
 import { PasswordComponent } from "../../../../shared/ui/components/password/password.component";
 import { TableComponent } from "../../../../shared/ui/components/table/table.component";
+import { ApiUrl } from '../../../../api.urls';
 interface IError {
   message: string[],
   error: string,
@@ -48,7 +49,7 @@ export class AdminComponent {
     this.jwt = this.tokensStorageService.getAccessToken() || '';
     this.jwt_refresh = this.tokensStorageService.getRefreshToken() || '';
 
-    this.request('api/users')
+    this.request(ApiUrl.Users)
       .then((res: any) => {
       this.users = res;
       });
@@ -56,7 +57,7 @@ export class AdminComponent {
   }
 
   deleteUser(user: any) {
-    this.request(`api/users/${user.id}`, 'DELETE')
+    this.request(`${ApiUrl.Users}/${user.id}`, 'DELETE')
     .then((res: any) => {
       console.log({res})
       if (res.error) {
@@ -70,7 +71,7 @@ export class AdminComponent {
   addUser(name: string, email: string, password: string) {
     this.error = null;
 
-    this.request('api/users', 'POST', {name, email, password})
+    this.request(ApiUrl.Users, 'POST', {name, email, password})
       .then((res: any) => {
         if (res.error) {
           this.errorHandler(res);

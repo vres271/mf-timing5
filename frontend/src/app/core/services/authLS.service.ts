@@ -3,6 +3,7 @@ import { JwtService } from './jwt.service';
 import { TokensStorageService } from './tokens-storage.service';
 import { HttpClient } from '@angular/common/http';
 import { ITokensDTO } from '../models/tokens.interface';
+import { ApiUrl } from '../../api.urls';
 
 interface IUser {
   id: string,
@@ -69,7 +70,7 @@ export class AuthService {
   }
 
   login(credentials: { name: string; password: string }): void {
-    this.http.post<ITokensDTO>('/api/auth/login', credentials).subscribe({
+    this.http.post<ITokensDTO>(ApiUrl.AuthLogin, credentials).subscribe({
       next: (response) => {
         this.tokensStorageService.setTokens({
           accessToken: response.access_token, 
@@ -88,7 +89,7 @@ export class AuthService {
     if (!refreshToken) {
       return;
     }
-    this.http.post<ITokensDTO>('/api/auth/refresh', { refreshToken }).subscribe({
+    this.http.post<ITokensDTO>(ApiUrl.AuthRefresh, { refreshToken }).subscribe({
       next: (response) => {
         this.tokensStorageService.setTokens({
           accessToken: response.access_token, 

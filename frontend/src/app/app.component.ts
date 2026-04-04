@@ -9,6 +9,7 @@ import { ButtonComponent } from './shared/ui/components/button/button.component'
 import { InputTextComponent } from "./shared/ui/components/input/input.component";
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordComponent } from "./shared/ui/components/password/password.component";
+import { ApiUrl } from './api.urls';
 interface IError {
   message: string[],
   error: string,
@@ -63,7 +64,7 @@ value1='';
     this.jwt = this.tokensStorageService.getAccessToken() || '';
     this.jwt_refresh = this.tokensStorageService.getRefreshToken() || '';
 
-    this.request('api/health')
+    this.request(ApiUrl.Health)
       .then(response => response.text())
       .then(text => {
         this.backendHealth = text;

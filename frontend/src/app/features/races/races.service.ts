@@ -5,12 +5,12 @@ import {
   IRace, IRaceDTO, 
   IRaceCreateDTO, IRaceUpdateDTO 
 } from './models/race.interface';
-import { map, Observable } from 'rxjs';
+import { ApiUrl } from '../../api.urls';
 
 @Injectable()
 export class RacesService extends BaseCrudService<IRace, IRaceDTO> {
   constructor(api: ApiService) {
-    super(api, '/api/races');
+    super(api, ApiUrl.Races);
   }
 
   fromDTO(dto: IRaceDTO): IRace {
